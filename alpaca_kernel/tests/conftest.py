@@ -10,9 +10,9 @@ from jupyter_client.session import Session
 from tornado.ioloop import IOLoop
 from zmq.eventloop.zmqstream import ZMQStream
 
-from ipykernel.ipkernel import IPythonKernel
-from ipykernel.kernelbase import Kernel
-from ipykernel.zmqshell import ZMQInteractiveShell
+from alpaca_kernel.ipkernel import IPythonKernel
+from alpaca_kernel.kernelbase import Kernel
+from alpaca_kernel.zmqshell import ZMQInteractiveShell
 
 try:
     import resource
@@ -137,7 +137,7 @@ class MockKernel(KernelMixin, Kernel):  # type:ignore
         }
 
 
-class MockIPyKernel(KernelMixin, IPythonKernel):  # type:ignore
+class Mockalpaca_kernel(KernelMixin, IPythonKernel):  # type:ignore
     def __init__(self, *args, **kwargs):
         self._initialize()
         super().__init__(*args, **kwargs)
@@ -153,7 +153,7 @@ async def kernel():
 
 @pytest.fixture
 async def ipkernel():
-    kernel = MockIPyKernel()
+    kernel = Mockalpaca_kernel()
     kernel.io_loop = IOLoop.current()
     yield kernel
     kernel.destroy()

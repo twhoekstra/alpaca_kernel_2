@@ -26,7 +26,7 @@ from PyQt4 import Qt
 # Functions and classes
 # -----------------------------------------------------------------------------
 class SimpleWindow(Qt.QWidget, InternalIPKernel):
-    """A custom Qt widget for IPykernel."""
+    """A custom Qt widget for alpaca_kernel."""
 
     def __init__(self, app):
         """Initialize the widget."""

@@ -6,7 +6,7 @@
 import warnings
 
 warnings.warn(
-    "ipykernel.serialize is deprecated. It has moved to ipyparallel.serialize",
+    "alpaca_kernel.serialize is deprecated. It has moved to ipyparallel.serialize",
     DeprecationWarning,
     stacklevel=2,
 )
@@ -27,8 +27,8 @@ try:
     )
     from ipyparallel.serialize.serialize import PICKLE_PROTOCOL
 except ImportError:
-    # Deprecated since ipykernel 4.3.0
-    from ipykernel.pickleutil import (
+    # Deprecated since alpaca_kernel 4.3.0
+    from alpaca_kernel.pickleutil import (
         PICKLE_PROTOCOL,
         CannedObject,
         can,

@@ -21,18 +21,19 @@ except ImportError:
 
 pjoin = os.path.join
 
-KERNEL_NAME = "python%i" % sys.version_info[0]
+# KERNEL_NAME = "python%i" % sys.version_info[0]
+KERNEL_NAME = "alpaca"
 
 # path to kernelspec resources
 RESOURCES = pjoin(os.path.dirname(__file__), "resources")
 
 
-def make_ipkernel_cmd(mod="ipykernel_launcher", executable=None, extra_arguments=None):
+def make_ipkernel_cmd(mod="alpaca_kernel_launcher", executable=None, extra_arguments=None):
     """Build Popen command list for launching an IPython kernel.
 
     Parameters
     ----------
-    mod : str, optional (default 'ipykernel')
+    mod : str, optional (default 'alpaca_kernel')
         A string of an IPython module whose __main__ starts an IPython kernel
     executable : str, optional (default sys.executable)
         The Python executable to use for the kernel process.
@@ -56,7 +57,7 @@ def get_kernel_dict(extra_arguments=None):
     """Construct dict for kernel.json"""
     return {
         "argv": make_ipkernel_cmd(extra_arguments=extra_arguments),
-        "display_name": "Python %i (ipykernel)" % sys.version_info[0],
+        "display_name": "Alpaca Kernel",
         "language": "python",
         "metadata": {"debugger": _is_debugpy_available},
     }
@@ -165,7 +166,7 @@ from traitlets.config import Application
 class InstallIPythonKernelSpecApp(Application):
     """Dummy app wrapping argparse"""
 
-    name = Unicode("ipython-kernel-install")
+    name = Unicode("alpaca-kernel-install")
 
     def initialize(self, argv=None):
         """Initialize the app."""

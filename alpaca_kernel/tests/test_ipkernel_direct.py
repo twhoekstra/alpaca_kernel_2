@@ -7,10 +7,10 @@ import pytest
 import zmq
 from IPython.core.history import DummyDB
 
-from ipykernel.comm.comm import BaseComm
-from ipykernel.ipkernel import IPythonKernel, _create_comm
+from alpaca_kernel.comm.comm import BaseComm
+from alpaca_kernel.ipkernel import IPythonKernel, _create_comm
 
-from .conftest import MockIPyKernel
+from .conftest import Mockalpaca_kernel
 
 if os.name == "nt":
     pytest.skip("skipping tests on windows", allow_module_level=True)
@@ -30,7 +30,7 @@ async def test_direct_kernel_info_request(ipkernel):
     assert reply["header"]["msg_type"] == "kernel_info_reply"
 
 
-async def test_direct_execute_request(ipkernel: MockIPyKernel) -> None:
+async def test_direct_execute_request(ipkernel: Mockalpaca_kernel) -> None:
     reply = await ipkernel.test_shell_message("execute_request", dict(code="hello", silent=False))
     assert reply["header"]["msg_type"] == "execute_reply"
     reply = await ipkernel.test_shell_message(
@@ -120,7 +120,7 @@ async def test_direct_interrupt_request(ipkernel):
 #     assert reply['header']['msg_type'] == 'usage_reply'
 
 
-async def test_is_complete_request(ipkernel: MockIPyKernel) -> None:
+async def test_is_complete_request(ipkernel: Mockalpaca_kernel) -> None:
     reply = await ipkernel.test_shell_message("is_complete_request", dict(code="hello"))
     assert reply["header"]["msg_type"] == "is_complete_reply"
     setattr(ipkernel, "shell.input_transformer_manager", None)
@@ -128,7 +128,7 @@ async def test_is_complete_request(ipkernel: MockIPyKernel) -> None:
     assert reply["header"]["msg_type"] == "is_complete_reply"
 
 
-def test_do_apply(ipkernel: MockIPyKernel) -> None:
+def test_do_apply(ipkernel: Mockalpaca_kernel) -> None:
     from ipyparallel import pack_apply_message
 
     def hello():

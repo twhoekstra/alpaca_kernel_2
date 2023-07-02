@@ -3,7 +3,7 @@ import warnings
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    from ipykernel.pickleutil import can, uncan
+    from alpaca_kernel.pickleutil import can, uncan
 
 
 def interactive(f):

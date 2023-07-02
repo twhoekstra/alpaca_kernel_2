@@ -14,7 +14,7 @@ import pytest
 import zmq
 from jupyter_client.session import Session
 
-from ipykernel.iostream import MASTER, BackgroundSocket, IOPubThread, OutStream
+from alpaca_kernel.iostream import MASTER, BackgroundSocket, IOPubThread, OutStream
 
 
 @pytest.fixture

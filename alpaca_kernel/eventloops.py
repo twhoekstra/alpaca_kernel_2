@@ -43,7 +43,7 @@ def register_integration(*toolkitnames):
     instance, arrange for the event loop to call ``kernel.do_one_iteration()``
     at least every ``kernel._poll_interval`` seconds, and start the event loop.
 
-    :mod:`ipykernel.eventloops` provides and registers such functions
+    :mod:`alpaca_kernel.eventloops` provides and registers such functions
     for a few common event loops.
     """
 

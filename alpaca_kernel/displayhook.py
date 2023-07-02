@@ -10,7 +10,7 @@ from IPython.core.displayhook import DisplayHook
 from jupyter_client.session import Session, extract_header
 from traitlets import Any, Dict, Instance
 
-from ipykernel.jsonutil import encode_images, json_clean
+from alpaca_kernel.jsonutil import encode_images, json_clean
 
 
 class ZMQDisplayHook:

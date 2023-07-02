@@ -497,11 +497,11 @@ class Debugger:
         # { frames from the notebook}
         # ...
         # { 'id': xxx, 'name': '<module>', ... } <= this is the first frame of the code from the notebook
-        # { frames from ipykernel }
+        # { frames from alpaca_kernel }
         # ...
-        # {'id': yyy, 'name': '<module>', ... } <= this is the first frame of ipykernel code
+        # {'id': yyy, 'name': '<module>', ... } <= this is the first frame of alpaca_kernel code
         # or only the frames from the notebook.
-        # We want to remove all the frames from ipykernel when they are present.
+        # We want to remove all the frames from alpaca_kernel when they are present.
         try:
             sf_list = reply["body"]["stackFrames"]
             module_idx = len(sf_list) - next(
@@ -563,7 +563,7 @@ class Debugger:
         message["arguments"]["connect"] = {"host": host, "port": port}
         message["arguments"]["logToFile"] = True
         # Experimental option to break in non-user code.
-        # The ipykernel source is in the call stack, so the user
+        # The alpaca_kernel source is in the call stack, so the user
         # has to manipulate the step-over and step-into in a wize way.
         # Set debugOptions for breakpoints in python standard library source.
         if not self.just_my_code:

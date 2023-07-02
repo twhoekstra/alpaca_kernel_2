@@ -11,13 +11,13 @@ import traitlets.config
 
 from .comm import Comm
 
-logger = logging.getLogger("ipykernel.comm")
+logger = logging.getLogger("alpaca_kernel.comm")
 
 
 class CommManager(comm.base_comm.CommManager, traitlets.config.LoggingConfigurable):
     """A comm manager."""
 
-    kernel = traitlets.Instance("ipykernel.kernelbase.Kernel")
+    kernel = traitlets.Instance("alpaca_kernel.kernelbase.Kernel")
     comms = traitlets.Dict()
     targets = traitlets.Dict()
 
@@ -29,7 +29,7 @@ class CommManager(comm.base_comm.CommManager, traitlets.config.LoggingConfigurab
 
     def comm_open(self, stream, ident, msg):
         """Handler for comm_open messages"""
-        # This is for backward compatibility, the comm_open creates a a new ipykernel.comm.Comm
+        # This is for backward compatibility, the comm_open creates a a new alpaca_kernel.comm.Comm
         # but we should let the base class create the comm with comm.create_comm in a major release
         content = msg["content"]
         comm_id = content["comm_id"]

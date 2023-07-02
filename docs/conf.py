@@ -45,7 +45,7 @@ except ImportError:
     pass
 
 
-github_project_url = "https://github.com/ipython/ipykernel"
+github_project_url = "https://github.com/ipython/alpaca_kernel"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -73,7 +73,7 @@ author = "IPython Development Team"
 
 version_ns: Dict[str, Any] = {}
 here = os.path.dirname(__file__)
-version_py = os.path.join(here, os.pardir, "ipykernel", "_version.py")
+version_py = os.path.join(here, os.pardir, "alpaca_kernel", "_version.py")
 with open(version_py) as f:
     exec(compile(f.read(), version_py, "exec"), version_ns)  # noqa
 
@@ -223,7 +223,7 @@ html_static_path: List[str] = []
 # html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "ipykerneldoc"
+htmlhelp_basename = "alpaca_kerneldoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -235,7 +235,7 @@ latex_elements: Dict[str, object] = {}
 latex_documents = [
     (
         master_doc,
-        "ipykernel.tex",
+        "alpaca_kernel.tex",
         "IPython Kernel Documentation",
         "IPython Development Team",
         "manual",
@@ -267,7 +267,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "ipykernel", "IPython Kernel Documentation", [author], 1)]
+man_pages = [(master_doc, "alpaca_kernel", "IPython Kernel Documentation", [author], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -281,10 +281,10 @@ man_pages = [(master_doc, "ipykernel", "IPython Kernel Documentation", [author],
 texinfo_documents = [
     (
         master_doc,
-        "ipykernel",
+        "alpaca_kernel",
         "IPython Kernel Documentation",
         author,
-        "ipykernel",
+        "alpaca_kernel",
         "One line description of project.",
         "Miscellaneous",
     ),

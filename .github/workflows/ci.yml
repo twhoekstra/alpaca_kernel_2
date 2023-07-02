@@ -1,4 +1,4 @@
-name: ipykernel tests
+name: alpaca_kernel tests
 
 on:
   push:
@@ -61,7 +61,7 @@ jobs:
         run: |
           pip install .
           cd $HOME
-          python -m ipykernel_launcher --help
+          python -m alpaca_kernel_launcher --help
 
       - uses: jupyterlab/maintainer-tools/.github/actions/upload-coverage@v1
 

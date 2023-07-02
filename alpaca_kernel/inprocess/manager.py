@@ -22,9 +22,9 @@ class InProcessKernelManager(KernelManager):
     """
 
     # The kernel process with which the KernelManager is communicating.
-    kernel = Instance("ipykernel.inprocess.ipkernel.InProcessKernel", allow_none=True)
+    kernel = Instance("alpaca_kernel.inprocess.ipkernel.InProcessKernel", allow_none=True)
     # the client class for KM.client() shortcut
-    client_class = DottedObjectName("ipykernel.inprocess.BlockingInProcessKernelClient")
+    client_class = DottedObjectName("alpaca_kernel.inprocess.BlockingInProcessKernelClient")
 
     @default("blocking_class")
     def _default_blocking_class(self):
@@ -43,7 +43,7 @@ class InProcessKernelManager(KernelManager):
 
     def start_kernel(self, **kwds):
         """Start the kernel."""
-        from ipykernel.inprocess.ipkernel import InProcessKernel
+        from alpaca_kernel.inprocess.ipkernel import InProcessKernel
 
         self.kernel = InProcessKernel(parent=self, session=self.session)
 

@@ -1,47 +1,47 @@
-ipykernel.inprocess package
+alpaca_kernel.inprocess package
 ===========================
 
 Submodules
 ----------
 
 
-.. automodule:: ipykernel.inprocess.blocking
+.. automodule:: alpaca_kernel.inprocess.blocking
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.inprocess.channels
+.. automodule:: alpaca_kernel.inprocess.channels
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.inprocess.client
+.. automodule:: alpaca_kernel.inprocess.client
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.inprocess.constants
+.. automodule:: alpaca_kernel.inprocess.constants
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.inprocess.ipkernel
+.. automodule:: alpaca_kernel.inprocess.ipkernel
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.inprocess.manager
+.. automodule:: alpaca_kernel.inprocess.manager
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.inprocess.socket
+.. automodule:: alpaca_kernel.inprocess.socket
    :members:
    :undoc-members:
    :show-inheritance:
@@ -49,7 +49,7 @@ Submodules
 Module contents
 ---------------
 
-.. automodule:: ipykernel.inprocess
+.. automodule:: alpaca_kernel.inprocess
    :members:
    :undoc-members:
    :show-inheritance:

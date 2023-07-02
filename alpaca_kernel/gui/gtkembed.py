@@ -15,7 +15,7 @@ import sys
 import warnings
 
 warnings.warn(
-    "The Gtk3 event loop for ipykernel is deprecated", category=DeprecationWarning, stacklevel=2
+    "The Gtk3 event loop for alpaca_kernel is deprecated", category=DeprecationWarning, stacklevel=2
 )
 
 # Third-party

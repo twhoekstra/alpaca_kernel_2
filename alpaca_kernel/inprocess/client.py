@@ -45,7 +45,7 @@ class InProcessKernelClient(KernelClient):
     control_channel_class = Type(InProcessChannel)
     hb_channel_class = Type(InProcessHBChannel)
 
-    kernel = Instance("ipykernel.inprocess.ipkernel.InProcessKernel", allow_none=True)
+    kernel = Instance("alpaca_kernel.inprocess.ipkernel.InProcessKernel", allow_none=True)
 
     # --------------------------------------------------------------------------
     # Channel management methods

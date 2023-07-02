@@ -9,10 +9,10 @@ import pytest
 from IPython.utils.io import capture_output  # type:ignore[attr-defined]
 from jupyter_client.session import Session
 
-from ipykernel.inprocess.blocking import BlockingInProcessKernelClient
-from ipykernel.inprocess.ipkernel import InProcessKernel
-from ipykernel.inprocess.manager import InProcessKernelManager
-from ipykernel.tests.utils import assemble_output
+from alpaca_kernel.inprocess.blocking import BlockingInProcessKernelClient
+from alpaca_kernel.inprocess.ipkernel import InProcessKernel
+from alpaca_kernel.inprocess.manager import InProcessKernelManager
+from alpaca_kernel.tests.utils import assemble_output
 
 orig_msg = Session.msg
 

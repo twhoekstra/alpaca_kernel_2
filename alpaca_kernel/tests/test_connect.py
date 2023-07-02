@@ -14,8 +14,8 @@ import pytest
 import zmq
 from traitlets.config.loader import Config
 
-from ipykernel import connect
-from ipykernel.kernelapp import IPKernelApp
+from alpaca_kernel import connect
+from alpaca_kernel.kernelapp import IPKernelApp
 
 from .utils import TemporaryWorkingDirectory
 

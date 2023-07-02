@@ -11,7 +11,7 @@ from unittest import mock
 import pytest
 from jupyter_core.paths import jupyter_data_dir
 
-from ipykernel.kernelspec import (
+from alpaca_kernel.kernelspec import (
     KERNEL_NAME,
     RESOURCES,
     InstallIPythonKernelSpecApp,
@@ -26,12 +26,12 @@ pjoin = os.path.join
 
 def test_make_ipkernel_cmd():
     cmd = make_ipkernel_cmd()
-    assert cmd == [sys.executable, "-m", "ipykernel_launcher", "-f", "{connection_file}"]
+    assert cmd == [sys.executable, "-m", "alpaca_kernel_launcher", "-f", "{connection_file}"]
 
 
 def assert_kernel_dict(d):
     assert d["argv"] == make_ipkernel_cmd()
-    assert d["display_name"] == "Python %i (ipykernel)" % sys.version_info[0]
+    assert d["display_name"] == "Python %i (alpaca_kernel)" % sys.version_info[0]
     assert d["language"] == "python"
 
 
@@ -42,7 +42,7 @@ def test_get_kernel_dict():
 
 def assert_kernel_dict_with_profile(d):
     assert d["argv"] == make_ipkernel_cmd(extra_arguments=["--profile", "test"])
-    assert d["display_name"] == "Python %i (ipykernel)" % sys.version_info[0]
+    assert d["display_name"] == "Python %i (alpaca_kernel)" % sys.version_info[0]
     assert d["language"] == "python"
 
 

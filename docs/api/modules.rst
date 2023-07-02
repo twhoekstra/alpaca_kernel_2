@@ -1,7 +1,7 @@
-ipykernel
+alpaca_kernel
 =========
 
 .. toctree::
    :maxdepth: 4
 
-   ipykernel
+   alpaca_kernel

@@ -5,7 +5,7 @@ import unittest
 
 from flaky import flaky
 
-from ipykernel.inprocess.manager import InProcessKernelManager
+from alpaca_kernel.inprocess.manager import InProcessKernelManager
 
 # -----------------------------------------------------------------------------
 # Test case

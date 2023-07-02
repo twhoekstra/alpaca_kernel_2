@@ -1,3 +1,10 @@
+import base64
+import urllib
+from io import BytesIO
+
+import numpy as np
+
+
 def _to_png(fig):
     """Return a base64-encoded PNG from a
     matplotlib figure."""
@@ -67,7 +74,7 @@ def unpack_Thonny_string(output):
             if at_end:
                 ii_number_end = ii + 1
 
-            print(ii_label_start, ii_number_start, ii_number_end)
+
             label = output[ii_label_start:ii_number_start].split(':')[0]
             label = label.rstrip()
             number = output[ii_number_start:ii_number_end]

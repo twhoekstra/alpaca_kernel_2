@@ -279,7 +279,7 @@ f(2, 3)"""
 
 def test_convert_to_long_pathname():
     if sys.platform == "win32":
-        from ipykernel.compiler import _convert_to_long_pathname
+        from alpaca_kernel.compiler import _convert_to_long_pathname
 
         _convert_to_long_pathname(__file__)
 

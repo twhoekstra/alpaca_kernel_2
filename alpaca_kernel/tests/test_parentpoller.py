@@ -5,7 +5,7 @@ from unittest import mock
 
 import pytest
 
-from ipykernel.parentpoller import ParentPollerUnix, ParentPollerWindows
+from alpaca_kernel.parentpoller import ParentPollerUnix, ParentPollerWindows
 
 
 @pytest.mark.skipif(os.name == "nt", reason="only works on posix")

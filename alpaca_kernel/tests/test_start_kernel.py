@@ -16,7 +16,7 @@ if os.name == "nt":
 def test_ipython_start_kernel_userns():
     cmd = dedent(
         """
-        from ipykernel.kernelapp import launch_new_instance
+        from alpaca_kernel.kernelapp import launch_new_instance
         ns = {"tre": 123}
         launch_new_instance(user_ns=ns)
         """
@@ -48,7 +48,7 @@ def test_ipython_start_kernel_no_userns():
     # Issue #4188 - user_ns should be passed to shell as None, not {}
     cmd = dedent(
         """
-        from ipykernel.kernelapp import launch_new_instance
+        from alpaca_kernel.kernelapp import launch_new_instance
         launch_new_instance()
         """
     )

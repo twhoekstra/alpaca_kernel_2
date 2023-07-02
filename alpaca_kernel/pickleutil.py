@@ -6,7 +6,7 @@ import typing
 import warnings
 
 warnings.warn(
-    "ipykernel.pickleutil is deprecated. It has moved to ipyparallel.",
+    "alpaca_kernel.pickleutil is deprecated. It has moved to ipyparallel.",
     DeprecationWarning,
     stacklevel=2,
 )
@@ -81,7 +81,7 @@ def use_dill():
     pickle = dill
 
     try:
-        from ipykernel import serialize
+        from alpaca_kernel import serialize
     except ImportError:
         pass
     else:
@@ -102,7 +102,7 @@ def use_cloudpickle():
     pickle = cloudpickle
 
     try:
-        from ipykernel import serialize
+        from alpaca_kernel import serialize
     except ImportError:
         pass
     else:

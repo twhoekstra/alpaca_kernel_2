@@ -16,7 +16,7 @@ from flaky import flaky
 from jupyter_client.blocking.client import BlockingKernelClient
 from jupyter_core import paths
 
-from ipykernel.embed import IPKernelApp, embed_kernel  # type:ignore[attr-defined]
+from alpaca_kernel.embed import IPKernelApp, embed_kernel  # type:ignore[attr-defined]
 
 SETUP_TIMEOUT = 60
 TIMEOUT = 15

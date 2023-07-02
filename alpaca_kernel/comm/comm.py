@@ -11,8 +11,8 @@ import comm.base_comm
 import traitlets.config
 from traitlets import Bool, Bytes, Instance, Unicode, default
 
-from ipykernel.jsonutil import json_clean
-from ipykernel.kernelbase import Kernel
+from alpaca_kernel.jsonutil import json_clean
+from alpaca_kernel.kernelbase import Kernel
 
 
 # this is the class that will be created if we do comm.create_comm
@@ -48,7 +48,7 @@ class BaseComm(comm.base_comm.BaseComm):
 class Comm(BaseComm, traitlets.config.LoggingConfigurable):
     """Class for communicating between a Frontend and a Kernel"""
 
-    kernel = Instance("ipykernel.kernelbase.Kernel", allow_none=True)  # type:ignore[assignment]
+    kernel = Instance("alpaca_kernel.kernelbase.Kernel", allow_none=True)  # type:ignore[assignment]
     comm_id = Unicode()
     primary = Bool(True, help="Am I the primary or secondary Comm?")
 
@@ -77,7 +77,7 @@ class Comm(BaseComm, traitlets.config.LoggingConfigurable):
         """Initialize a comm."""
         if show_warning:
             warn(
-                "The `ipykernel.comm.Comm` class has been deprecated. Please use the `comm` module instead."
+                "The `alpaca_kernel.comm.Comm` class has been deprecated. Please use the `comm` module instead."
                 "For creating comms, use the function `from comm import create_comm`.",
                 DeprecationWarning,
                 stacklevel=2,

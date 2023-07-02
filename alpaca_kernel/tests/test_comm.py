@@ -2,9 +2,9 @@ import unittest.mock
 
 import pytest
 
-from ipykernel.comm import Comm, CommManager
-from ipykernel.ipkernel import IPythonKernel
-from ipykernel.kernelbase import Kernel
+from alpaca_kernel.comm import Comm, CommManager
+from alpaca_kernel.ipkernel import IPythonKernel
+from alpaca_kernel.kernelbase import Kernel
 
 
 def test_comm(kernel: Kernel) -> None:

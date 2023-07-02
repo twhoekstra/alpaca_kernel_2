@@ -23,7 +23,7 @@ jobs:
         uses: jupyterlab/maintainer-tools/.github/actions/downstream-test@v1
         with:
           package_name: nbclient
-          env_values: IPYKERNEL_CELL_NAME=\<IPY-INPUT\>
+          env_values: alpaca_kernel_CELL_NAME=\<IPY-INPUT\>
 
   ipywidgets:
     runs-on: ubuntu-latest
@@ -83,7 +83,7 @@ jobs:
           git clone https://github.com/jupyter/jupyter_kernel_test.git
           cd jupyter_kernel_test
           pip install -e ".[test]"
-          python test_ipykernel.py
+          python test_alpaca_kernel.py
 
   qtconsole:
     runs-on: ubuntu-latest
@@ -108,7 +108,7 @@ jobs:
           cd qtconsole
           ${pythonLocation}/bin/python -m pip install -e ".[test]"
           ${pythonLocation}/bin/python -m pip install pyqt5
-      - name: Install Ipykernel changes
+      - name: Install alpaca_kernel changes
         shell: bash -l {0}
         run: ${pythonLocation}/bin/python -m pip install -e .
       - name: Test qtconsole
@@ -139,7 +139,7 @@ jobs:
           git clone https://github.com/spyder-ide/spyder-kernels.git
           cd spyder-kernels
           ${pythonLocation}/bin/python -m pip install -e ".[test]"
-      - name: Install IPykernel changes
+      - name: Install alpaca_kernel changes
         shell: bash -l {0}
         run: ${pythonLocation}/bin/python -m pip install -e .
       - name: Test spyder-kernels

@@ -6,6 +6,7 @@
 import asyncio
 import atexit
 import io
+import logging
 import os
 import sys
 import threading
@@ -297,7 +298,7 @@ class BackgroundSocket:
         if hasattr(self.io_thread.socket, attr):
             warnings.warn(
                 f"Accessing zmq Socket attribute {attr} on BackgroundSocket"
-                f" is deprecated since ipykernel 4.3.0"
+                f" is deprecated since alpaca_kernel 4.3.0"
                 f" use .io_thread.socket.{attr}",
                 DeprecationWarning,
                 stacklevel=2,
@@ -312,7 +313,7 @@ class BackgroundSocket:
         else:
             warnings.warn(
                 f"Setting zmq Socket attribute {attr} on BackgroundSocket"
-                f" is deprecated since ipykernel 4.3.0"
+                f" is deprecated since alpaca_kernel 4.3.0"
                 f" use .io_thread.socket.{attr}",
                 DeprecationWarning,
                 stacklevel=2,
@@ -413,7 +414,7 @@ class OutStream(TextIOBase):
         """
         if pipe is not None:
             warnings.warn(
-                "pipe argument to OutStream is deprecated and ignored since ipykernel 4.2.3.",
+                "pipe argument to OutStream is deprecated and ignored since alpaca_kernel 4.2.3.",
                 DeprecationWarning,
                 stacklevel=2,
             )
@@ -422,7 +423,7 @@ class OutStream(TextIOBase):
         if not isinstance(pub_thread, IOPubThread):
             # Backward-compat: given socket, not thread. Wrap in a thread.
             warnings.warn(
-                "Since IPykernel 4.3, OutStream should be created with "
+                "Since alpaca_kernel 4.3, OutStream should be created with "
                 "IOPubThread, not %r" % pub_thread,
                 DeprecationWarning,
                 stacklevel=2,

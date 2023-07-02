@@ -112,16 +112,16 @@ To read more about this, see https://github.com/ipython/ipython/issues/2049
 
 
 class IPKernelApp(BaseIPythonApplication, InteractiveShellApp, ConnectionFileMixin):
-    """The IPYKernel application class."""
+    """The alpaca_kernel application class."""
 
-    name = "ipython-kernel"
+    name = "alpaca-kernel"
     aliases = Dict(kernel_aliases)  # type:ignore[assignment]
     flags = Dict(kernel_flags)  # type:ignore[assignment]
     classes = [IPythonKernel, ZMQInteractiveShell, ProfileDir, Session]
     # the kernel class, as an importstring
     kernel_class = Type(
-        "ipykernel.ipkernel.IPythonKernel",
-        klass="ipykernel.kernelbase.Kernel",
+        "alpaca_kernel.ipkernel.IPythonKernel",
+        klass="alpaca_kernel.kernelbase.Kernel",
         help="""The Kernel subclass to be used.
 
     This should allow easy re-use of the IPKernelApp entry point
@@ -146,7 +146,7 @@ class IPKernelApp(BaseIPythonApplication, InteractiveShellApp, ConnectionFileMix
 
     subcommands = {
         "install": (
-            "ipykernel.kernelspec.InstallIPythonKernelSpecApp",
+            "alpaca_kernel.kernelspec.InstallIPythonKernelSpecApp",
             "Install the IPython kernel",
         ),
     }
@@ -171,12 +171,12 @@ class IPKernelApp(BaseIPythonApplication, InteractiveShellApp, ConnectionFileMix
     trio_loop = Bool(False, help="Set main event loop.").tag(config=True)
     quiet = Bool(True, help="Only send stdout/stderr to output stream").tag(config=True)
     outstream_class = DottedObjectName(
-        "ipykernel.iostream.OutStream",
+        "alpaca_kernel.iostream.OutStream",
         help="The importstring for the OutStream factory",
         allow_none=True,
     ).tag(config=True)
     displayhook_class = DottedObjectName(
-        "ipykernel.displayhook.ZMQDisplayHook", help="The importstring for the DisplayHook factory"
+        "alpaca_kernel.displayhook.ZMQDisplayHook", help="The importstring for the DisplayHook factory"
     ).tag(config=True)
 
     capture_fd_output = Bool(
@@ -328,7 +328,7 @@ class IPKernelApp(BaseIPythonApplication, InteractiveShellApp, ConnectionFileMix
         if hasattr(zmq, "ROUTER_HANDOVER"):
             # set router-handover to workaround zeromq reconnect problems
             # in certain rare circumstances
-            # see ipython/ipykernel#270 and zeromq/libzmq#2892
+            # see ipython/alpaca_kernel#270 and zeromq/libzmq#2892
             self.shell_socket.router_handover = self.stdin_socket.router_handover = 1
 
         self.init_control(context)
@@ -352,7 +352,7 @@ class IPKernelApp(BaseIPythonApplication, InteractiveShellApp, ConnectionFileMix
         if hasattr(zmq, "ROUTER_HANDOVER"):
             # set router-handover to workaround zeromq reconnect problems
             # in certain rare circumstances
-            # see ipython/ipykernel#270 and zeromq/libzmq#2892
+            # see ipython/alpaca_kernel#270 and zeromq/libzmq#2892
             self.control_socket.router_handover = 1
 
         self.control_thread = ControlThread(daemon=True)
@@ -715,7 +715,7 @@ class IPKernelApp(BaseIPythonApplication, InteractiveShellApp, ConnectionFileMix
         self.kernel.start()
         self.io_loop = ioloop.IOLoop.current()
         if self.trio_loop:
-            from ipykernel.trio_runner import TrioRunner
+            from alpaca_kernel.trio_runner import TrioRunner
 
             tr = TrioRunner()
             tr.initialize(self.kernel, self.io_loop)

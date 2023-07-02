@@ -9,7 +9,7 @@ import time
 import pytest
 import tornado
 
-from ipykernel.eventloops import (
+from alpaca_kernel.eventloops import (
     enable_gui,
     loop_asyncio,
     loop_cocoa,
@@ -57,7 +57,7 @@ def teardown():
 
 
 async_code = """
-from ipykernel.tests._asyncio_utils import async_func
+from alpaca_kernel.tests._asyncio_utils import async_func
 async_func()
 """
 

@@ -10,9 +10,9 @@ from contextlib import contextmanager
 from IPython.core.interactiveshell import InteractiveShellABC
 from traitlets import Any, Enum, Instance, List, Type, default
 
-from ipykernel.ipkernel import IPythonKernel
-from ipykernel.jsonutil import json_clean
-from ipykernel.zmqshell import ZMQInteractiveShell
+from alpaca_kernel.ipkernel import IPythonKernel
+from alpaca_kernel.jsonutil import json_clean
+from alpaca_kernel.zmqshell import ZMQInteractiveShell
 
 from ..iostream import BackgroundSocket, IOPubThread, OutStream
 from .constants import INPROCESS_KEY
@@ -31,7 +31,7 @@ class InProcessKernel(IPythonKernel):
     # -------------------------------------------------------------------------
 
     # The frontends connected to this kernel.
-    frontends = List(Instance("ipykernel.inprocess.client.InProcessKernelClient", allow_none=True))
+    frontends = List(Instance("alpaca_kernel.inprocess.client.InProcessKernelClient", allow_none=True))
 
     # The GUI environment that the kernel is running under. This need not be
     # specified for the normal operation for the kernel, but is required for
@@ -170,7 +170,7 @@ class InProcessInteractiveShell(ZMQInteractiveShell):
     """An in-process interactive shell."""
 
     kernel: InProcessKernel = Instance(
-        "ipykernel.inprocess.ipkernel.InProcessKernel", allow_none=True
+        "alpaca_kernel.inprocess.ipkernel.InProcessKernel", allow_none=True
     )  # type:ignore[assignment]
 
     # -------------------------------------------------------------------------

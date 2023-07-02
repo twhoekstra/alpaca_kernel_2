@@ -1,4 +1,4 @@
-"""An internal ipykernel example."""
+"""An internal alpaca_kernel example."""
 # -----------------------------------------------------------------------------
 # Imports
 # -----------------------------------------------------------------------------
@@ -7,7 +7,7 @@ import sys
 
 from IPython.lib.kernel import connect_qtconsole
 
-from ipykernel.kernelapp import IPKernelApp
+from alpaca_kernel.kernelapp import IPKernelApp
 
 
 # -----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ def mpl_kernel(gui):
 
 
 class InternalIPKernel:
-    """An internal ipykernel class."""
+    """An internal alpaca_kernel class."""
 
     def init_ipkernel(self, backend):
         """Start IPython kernel with GUI event loop and mpl support."""

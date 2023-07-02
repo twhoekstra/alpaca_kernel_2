@@ -57,7 +57,7 @@ from traitlets.traitlets import (
 )
 from zmq.eventloop.zmqstream import ZMQStream
 
-from ipykernel.jsonutil import json_clean
+from alpaca_kernel.jsonutil import json_clean
 
 from ._version import kernel_protocol_version
 
@@ -108,7 +108,7 @@ class Kernel(SingletonConfigurable):
     @default("shell_streams")
     def _shell_streams_default(self):  # pragma: no cover
         warnings.warn(
-            "Kernel.shell_streams is deprecated in ipykernel 6.0. Use Kernel.shell_stream",
+            "Kernel.shell_streams is deprecated in alpaca_kernel 6.0. Use Kernel.shell_stream",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -120,7 +120,7 @@ class Kernel(SingletonConfigurable):
     @observe("shell_streams")
     def _shell_streams_changed(self, change):  # pragma: no cover
         warnings.warn(
-            "Kernel.shell_streams is deprecated in ipykernel 6.0. Use Kernel.shell_stream",
+            "Kernel.shell_streams is deprecated in alpaca_kernel 6.0. Use Kernel.shell_stream",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -159,7 +159,7 @@ class Kernel(SingletonConfigurable):
     help_links = List()
 
     # Experimental option to break in non-user code.
-    # The ipykernel source is in the call stack, so the user
+    # The alpaca_kernel source is in the call stack, so the user
     # has to manipulate the step-over and step-into in a wize way.
     debug_just_my_code = Bool(
         True,
@@ -186,7 +186,7 @@ class Kernel(SingletonConfigurable):
     @property
     def _parent_header(self):
         warnings.warn(
-            "Kernel._parent_header is deprecated in ipykernel 6. Use .get_parent()",
+            "Kernel._parent_header is deprecated in alpaca_kernel 6. Use .get_parent()",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -680,7 +680,7 @@ class Kernel(SingletonConfigurable):
         Run at the beginning of execution requests.
         """
         # FIXME: `started` is part of ipyparallel
-        # Remove for ipykernel 5.0
+        # Remove for alpaca_kernel 5.0
         return {
             "started": now(),
         }
@@ -1178,7 +1178,7 @@ class Kernel(SingletonConfigurable):
             import warnings
 
             warnings.warn(
-                "The `stream` parameter of `getpass.getpass` will have no effect when using ipykernel",
+                "The `stream` parameter of `getpass.getpass` will have no effect when using alpaca_kernel",
                 UserWarning,
                 stacklevel=2,
             )

@@ -1,12 +1,15 @@
 """The IPython kernel implementation"""
+import argparse
 import ast
 import asyncio
 import binascii
 import builtins
+import copy
 import getpass
 import logging
 import os
 import re
+import shlex
 import signal
 import sys
 import threading
@@ -24,7 +27,8 @@ from tornado import websocket
 import comm
 from IPython.core import release
 from IPython.utils.tokenutil import line_at_cursor, token_at_cursor
-from traitlets import Any, Bool, HasTraits, Instance, List, Type, observe, observe_compat
+from traitlets import Any, Bool, HasTraits, Instance, List, Type, observe, \
+    observe_compat
 from zmq.eventloop.zmqstream import ZMQStream
 
 from .alpaca import deviceconnector
@@ -39,18 +43,20 @@ from .kernelbase import _accepts_cell_id
 from .zmqshell import ZMQInteractiveShell
 
 try:
-    from IPython.core.interactiveshell import _asyncio_runner  # type:ignore[attr-defined]
+    from IPython.core.interactiveshell import \
+        _asyncio_runner  # type:ignore[attr-defined]
 except ImportError:
     _asyncio_runner = None  # type:ignore
 
 try:
-    from IPython.core.completer import provisionalcompleter as _provisionalcompleter
-    from IPython.core.completer import rectify_completions as _rectify_completions
+    from IPython.core.completer import \
+        provisionalcompleter as _provisionalcompleter
+    from IPython.core.completer import \
+        rectify_completions as _rectify_completions
 
     _use_experimental_60_completion = True
 except ImportError:
     _use_experimental_60_completion = False
-
 
 _EXPERIMENTAL_KEY_NAME = "_jupyter_types_experimental"
 
@@ -60,7 +66,7 @@ def _create_comm(*args, **kwargs):
     return BaseComm(*args, **kwargs)
 
 
-# there can only be one comm manager in a ipykernel process
+# there can only be one comm manager in a alpaca_kernel process
 _comm_lock = threading.Lock()
 _comm_manager: t.Optional[CommManager] = None
 
@@ -77,6 +83,112 @@ def _get_comm_manager(*args, **kwargs):
 
 comm.create_comm = _create_comm
 comm.get_comm_manager = _get_comm_manager
+
+ap_plot = argparse.ArgumentParser(prog="%plot", add_help=False)
+ap_plot.add_argument('--mode', type=str, default='matplotlib')
+ap_plot.add_argument('--trigger_lvl', type=float, default=1.0)
+ap_plot.add_argument('--type', type=str, default='RISE')
+ap_plot.add_argument('--chan', type=int, default=1)
+
+ap_bypass = argparse.ArgumentParser(prog="%python", add_help=False)
+
+ap_serialconnect = argparse.ArgumentParser(prog="%serialconnect",
+                                           add_help=False)
+ap_serialconnect.add_argument('--raw', help='Just open connection',
+                              action='store_true')
+ap_serialconnect.add_argument('--port', type=str, default=0)
+ap_serialconnect.add_argument('--baud', type=int, default=115200)
+ap_serialconnect.add_argument('--verbose', action='store_true')
+
+ap_socketconnect = argparse.ArgumentParser(prog="%socketconnect",
+                                           add_help=False)
+ap_socketconnect.add_argument('--raw', help='Just open connection',
+                              action='store_true')
+ap_socketconnect.add_argument('ipnumber', type=str)
+ap_socketconnect.add_argument('portnumber', type=int)
+
+ap_disconnect = argparse.ArgumentParser(prog="%disconnect", add_help=False)
+ap_disconnect.add_argument('--raw',
+                           help='Close connection without exiting paste mode',
+                           action='store_true')
+
+ap_websocketconnect = argparse.ArgumentParser(prog="%websocketconnect",
+                                              add_help=False)
+ap_websocketconnect.add_argument('--raw', help='Just open connection',
+                                 action='store_true')
+ap_websocketconnect.add_argument('websocketurl', type=str,
+                                 default="ws://192.168.4.1:8266", nargs="?")
+ap_websocketconnect.add_argument("--password", type=str)
+ap_websocketconnect.add_argument('--verbose', action='store_true')
+
+ap_writebytes = argparse.ArgumentParser(prog="%writebytes", add_help=False)
+ap_writebytes.add_argument('--binary', '-b', action='store_true')
+ap_writebytes.add_argument('--verbose', '-v', action='store_true')
+ap_writebytes.add_argument('stringtosend', type=str)
+
+ap_readbytes = argparse.ArgumentParser(prog="%readbytes", add_help=False)
+ap_readbytes.add_argument('--binary', '-b', action='store_true')
+
+ap_sendtofile = argparse.ArgumentParser(prog="%sendtofile",
+                                        description="send a file to the microcontroller's file system",
+                                        add_help=False)
+ap_sendtofile.add_argument('--append', '-a', action='store_true')
+ap_sendtofile.add_argument('--mkdir', '-d', action='store_true')
+ap_sendtofile.add_argument('--binary', '-b', action='store_true')
+ap_sendtofile.add_argument('--execute', '-x', action='store_true')
+ap_sendtofile.add_argument('--source', help="source file", type=str,
+                           default="<<cellcontents>>", nargs="?")
+ap_sendtofile.add_argument('--quiet', '-q', action='store_true')
+ap_sendtofile.add_argument('--QUIET', '-Q', action='store_true')
+ap_sendtofile.add_argument('destinationfilename', type=str, nargs="?")
+
+ap_ls = argparse.ArgumentParser(prog="%ls",
+                                description="list directory of the microcontroller's file system",
+                                add_help=False)
+ap_ls.add_argument('--recurse', '-r', action='store_true')
+ap_ls.add_argument('dirname', type=str, nargs="?")
+
+ap_fetchfile = argparse.ArgumentParser(prog="%fetchfile",
+                                       description="fetch a file from the microcontroller's file system",
+                                       add_help=False)
+ap_fetchfile.add_argument('--binary', '-b', action='store_true')
+ap_fetchfile.add_argument('--print', '-p', action="store_true")
+ap_fetchfile.add_argument('--load', '-l', action="store_true")
+ap_fetchfile.add_argument('--quiet', '-q', action='store_true')
+ap_fetchfile.add_argument('--QUIET', '-Q', action='store_true')
+ap_fetchfile.add_argument('sourcefilename', type=str)
+ap_fetchfile.add_argument('destinationfilename', type=str, nargs="?")
+
+ap_mpycross = argparse.ArgumentParser(prog="%mpy-cross", add_help=False)
+ap_mpycross.add_argument('--set-exe', type=str)
+ap_mpycross.add_argument('pyfile', type=str, nargs="?")
+
+ap_esptool = argparse.ArgumentParser(prog="%esptool", add_help=False)
+ap_esptool.add_argument('--port', type=str, default=0)
+ap_esptool.add_argument('espcommand', choices=['erase', 'esp32', 'esp8266'])
+ap_esptool.add_argument('binfile', type=str, nargs="?")
+
+ap_capture = argparse.ArgumentParser(prog="%capture",
+                                     description="capture output printed by device and save to a file",
+                                     add_help=False)
+ap_capture.add_argument('--quiet', '-q', action='store_true')
+ap_capture.add_argument('--QUIET', '-Q', action='store_true')
+ap_capture.add_argument('outputfilename', type=str)
+
+ap_writefilepc = argparse.ArgumentParser(prog="%%writefile",
+                                         description="write contents of cell to file on PC",
+                                         add_help=False)
+ap_writefilepc.add_argument('--append', '-a', action='store_true')
+ap_writefilepc.add_argument('--execute', '-x', action='store_true')
+ap_writefilepc.add_argument('destinationfilename', type=str)
+
+
+def parseap(ap, percentstringargs1):
+    try:
+        return ap.parse_known_args(percentstringargs1)[0]
+    except SystemExit:  # argparse throws these because it assumes you only want to do the command line
+        return None  # should be a default one
+
 
 # --------------------- Plotting settings ----------------------------
 DEFAULT_PLOT_MODE = 1  # 0 = no plot, 1 = matplotlib plot, 2 = live plot, 3 scope
@@ -106,15 +218,45 @@ PLOT_PREFIX = '%matplotlibdata --'
 serialtimeout = 0.5
 serialtimeoutcount = 10
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.INFO)
+
+logging.basicConfig(
+    format='%(asctime)s [%(levelname)s] %(name)s - %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S',
+    stream=sys.stdout,
+)
+log = logging.getLogger('notebook')
+
+
+def _get_plot_arguments(i, j, output):
+    attribute = output[:i]
+    # TODO: WHy are there two attributes here?
+    filtered_attribute = VALID_ATTRIBUTES.get(attribute,
+                                              attribute)
+    args = output[i + 1:j]
+    if args != '':
+        args = args.split(', ')
+
+        for i, arg in enumerate(args):
+            if sum(cc.isalpha() for cc in arg) == 0:
+                # Numbers
+                args[i] = float(arg)
+            else:
+                args[i] = arg.replace('"', '').replace('\'', '')
+    else:
+        args = ()
+    return args, filtered_attribute
+
 
 class IPythonKernel(KernelBase):
     """The IPython Kernel class."""
 
     banner = "MicroPython Serializer for ALPACA"
 
-    shell = Instance("IPython.core.interactiveshell.InteractiveShellABC", allow_none=True)
+    shell = Instance("IPython.core.interactiveshell.InteractiveShellABC",
+                     allow_none=True)
     shell_class = Type(ZMQInteractiveShell)
 
     use_experimental_completions = Bool(
@@ -122,7 +264,8 @@ class IPythonKernel(KernelBase):
         help="Set this flag to False to deactivate the use of experimental IPython completion APIs.",
     ).tag(config=True)
 
-    debugpy_stream = Instance(ZMQStream, allow_none=True) if _is_debugpy_available else None
+    debugpy_stream = Instance(ZMQStream,
+                              allow_none=True) if _is_debugpy_available else None
 
     user_module = Any()
 
@@ -151,7 +294,12 @@ class IPythonKernel(KernelBase):
         super().__init__(**kwargs)
 
         # Initialize the Debugger
+        self.ax = None
+        self.fig = None
         self.use_micropython = True
+
+        logging.info("Started Kernel")
+
         if _is_debugpy_available:
             self.debugger = Debugger(
                 self.log,
@@ -214,7 +362,6 @@ class IPythonKernel(KernelBase):
         self.sres_trig_chan = 1
         self.sresstartedplot = 0  #
         self.sresliveiteration = 0
-        self.bypass = False
 
     help_links = List(
         [
@@ -282,13 +429,15 @@ class IPythonKernel(KernelBase):
         """Start the kernel."""
         self.shell.exit_now = False
         if self.debugpy_stream is None:
-            self.log.warning("debugpy_stream undefined, debugging will not be enabled")
+            self.log.warning(
+                "debugpy_stream undefined, debugging will not be enabled")
         else:
             self.debugpy_stream.on_recv(self.dispatch_debugpy, copy=False)
         super().start()
         if self.debugpy_stream:
             asyncio.run_coroutine_threadsafe(
-                self.poll_stopped_queue(), self.control_thread.io_loop.asyncio_loop
+                self.poll_stopped_queue(),
+                self.control_thread.io_loop.asyncio_loop
             )
 
     def set_parent(self, ident, parent, channel="shell"):
@@ -323,7 +472,8 @@ class IPythonKernel(KernelBase):
         # FIXME: remove deprecated ipyparallel-specific code
         # This is required by ipyparallel < 5.0
         metadata["status"] = reply_content["status"]
-        if reply_content["status"] == "error" and reply_content["ename"] == "UnmetDependency":
+        if reply_content["status"] == "error" and reply_content[
+            "ename"] == "UnmetDependency":
             metadata["dependencies_met"] = False
 
         return metadata
@@ -409,6 +559,8 @@ class IPythonKernel(KernelBase):
         if self.silent:
             return
 
+        # logging.info(output)
+
         if (self.srescapturedoutputfile
                 and (n04count == 0)
                 and not asciigraphicscode):
@@ -432,7 +584,8 @@ class IPythonKernel(KernelBase):
                 output = "{} lines captured".format(self.srescapturedlinecount)
 
         if clear_output:  # used when updating lines printed
-            self.send_response(self.iopub_socket, 'clear_output', {"wait": True})
+            self.send_response(self.iopub_socket, 'clear_output',
+                               {"wait": True})
         if asciigraphicscode:
             output = "\x1b[{}m{}\x1b[0m".format(asciigraphicscode, output)
 
@@ -443,7 +596,7 @@ class IPythonKernel(KernelBase):
 
     def sresPLOT(self, output: str, asciigraphicscode=None, n04count=0,
                  clear_output=False):
-        # logging.debug(output)
+
         if self.silent:
             return
 
@@ -452,7 +605,7 @@ class IPythonKernel(KernelBase):
 
         if self.sresplotmode == 0:
             # Plotting on but no plot commands used in code
-            self.sres(output, n04count=n04count)
+            self.sres(output)
             return
 
         if self.sresplotmode == 1:  # matplotlib-esque (array) plotting
@@ -473,7 +626,8 @@ class IPythonKernel(KernelBase):
                         args_end = output.find(
                             '{') - 2 if '{' in output else output.find(')')
 
-                        args, filtered_attribute = self._get_plot_arguments(args_start, args_end, output)
+                        args, filtered_attribute = _get_plot_arguments(
+                            args_start, args_end, output)
 
                         kwargs_start = args_end + 2
 
@@ -482,11 +636,12 @@ class IPythonKernel(KernelBase):
                         return None
                 except (AttributeError, SyntaxError, ValueError) as e:
                     # Catch formatting errors
-                    self.sres(output, n04count=n04count)
+                    self.sres(output)
                     return None
 
                 try:
-                    getattr(self.ax, filtered_attribute)(*args, **kwargs)  # Run command
+                    getattr(self.ax, filtered_attribute)(*args,
+                                                         **kwargs)  # Run command
                     logging.debug(f'Plot setting {filtered_attribute} changed')
                     return None
                 except Exception:
@@ -511,8 +666,8 @@ class IPythonKernel(KernelBase):
                 except Exception as e:
                     # Incorrect formatting, this should not happen when using
                     # The plotting module for the ALPACA
-                    self.sres(output, n04count=n04count)
-                    logging.debug(traceback.format_exc())
+                    self.sres(output)
+
                     return None
 
                 # the data is good and plotting can commence
@@ -532,9 +687,9 @@ class IPythonKernel(KernelBase):
                 return None
 
             else:  # Not something to plot, just print
-                self.sres(output, n04count=n04count)
+                self.sres(output)
 
-        if self.sresplotmode in (2, 3, 4):  # Thonny-eqsue plotting or
+        elif self.sresplotmode in (2, 3, 4):  # Thonny-eqsue plotting or
             # scope-esque plotting
             # format print("Random walk:", p1, " just random:", p2)
             try:
@@ -545,8 +700,10 @@ class IPythonKernel(KernelBase):
                     return
 
                 data = unpack_Thonny_string(output)
-            except ValueError:
-                self.sres(output, n04count=n04count)
+
+            except ValueError as e:
+                self.sres(output)
+                logging.exception(e)
                 return
 
             # the data is good and plotting can commence
@@ -589,7 +746,7 @@ class IPythonKernel(KernelBase):
                     return None
 
             try:
-                if self.sresplotmode == 4: # EEG style (auto-scroll)
+                if self.sresplotmode == 4:  # EEG style (auto-scroll)
                     if self.sresliveiteration < 100:
                         self.yy = np.append(
                             self.yy,
@@ -605,7 +762,7 @@ class IPythonKernel(KernelBase):
                             self.xx[1:],
                             time.time() - self.sresstartedplottime)
 
-                elif self.sresplotmode == 2: # Live plot (no scroll)
+                elif self.sresplotmode == 2:  # Live plot (no scroll)
                     self.yy = np.append(
                         self.yy,
                         [list(data.values())], axis=0)
@@ -637,7 +794,8 @@ class IPythonKernel(KernelBase):
                         self.xx = np.zeros(0)
 
                     self.yy = np.append(self.yy, [data_l], axis=0)
-                    self.xx = np.append(self.xx, time.time() - self.sresstartedplottime)
+                    self.xx = np.append(self.xx,
+                                        time.time() - self.sresstartedplottime)
 
                 # self.ax.cla() # Clear
                 for args_start, line in enumerate(self.lines):
@@ -650,11 +808,13 @@ class IPythonKernel(KernelBase):
                 xx_minimum = np.amin(self.xx)
                 xx_maximum = np.amax(self.xx)
                 if self.sresplotmode == 2:
-                    yy_edge_size = (yy_maximum - yy_minimum) / 10
-                    xx_edge_size = (xx_maximum - xx_minimum) / 10
+                    yy_edge_size = (yy_maximum - yy_minimum) / 10 + 0.001
+                    xx_edge_size = (xx_maximum - xx_minimum) / 10 + 0.001
 
-                    self.ax.set_ylim(yy_minimum - yy_edge_size, yy_maximum + yy_edge_size * 2)  # Extra space for legend
-                    self.ax.set_xlim(xx_minimum - xx_edge_size, xx_maximum + xx_edge_size)
+                    self.ax.set_ylim(yy_minimum - yy_edge_size,
+                                     yy_maximum + yy_edge_size * 2)  # Extra space for legend
+                    self.ax.set_xlim(xx_minimum - xx_edge_size,
+                                     xx_maximum + xx_edge_size)
                 else:
                     if ((yy_minimum < self.yy_minimum)
                             or (yy_maximum > self.yy_maximum)
@@ -670,18 +830,21 @@ class IPythonKernel(KernelBase):
 
                         self.ax.set_ylim(self.yy_minimum - yy_edge_size,
                                          self.yy_maximum + yy_edge_size * 2)  # Extra space for legend
-                        self.ax.set_xlim(self.xx_minimum - xx_edge_size, self.xx_maximum + xx_edge_size)
+                        self.ax.set_xlim(self.xx_minimum - xx_edge_size,
+                                         self.xx_maximum + xx_edge_size)
                 # self.ax.plot(self.xx, self.yy, label =  # Plot
 
                 if self.sresliveiteration:
-                    self.sendPLOT(update_id=self.plot_uuid)  # Use old plot and display
+                     self.sendPLOT(
+                        update_id=self.plot_uuid)  # Use old plot and display
                 else:
                     self.plot_uuid = self.sendPLOT()  # Create new plot and store UUID
 
                 self.sresliveiteration += 1
             except Exception as e:
                 self.sres(output, n04count=n04count)
-                logging.exception(e)
+                tb = traceback.format_exc()
+                logging.exception(tb)
                 return None
             return None
 
@@ -695,9 +858,15 @@ class IPythonKernel(KernelBase):
         return fmt, kwargs
 
     def _get_xy_data(self, data):
+        logging.debug(f"{len(data)}DATASTART{data}DATAEND")
         args_start = data.find('], [')
+
         xx_hex_data, yy_hex_data = (
-        data[2: args_start], data[args_start + 4:data.rfind(']') - 1])
+            data[2: args_start], data[args_start + 4:data.rfind(']') - 1])
+
+        logging.debug(f"{len(xx_hex_data)}XSTART{xx_hex_data}XEND")
+        logging.debug(f"{len(yy_hex_data)}YSTART{yy_hex_data}YEND")
+
         xx_returned_data = bytearray(binascii.unhexlify(xx_hex_data))
         yy_returned_data = bytearray(binascii.unhexlify(yy_hex_data))
         try:
@@ -711,31 +880,11 @@ class IPythonKernel(KernelBase):
 
     def _get_plot_kwargs(self, kwargs_start, output):
         if '{' in output and '{}' not in output:  # read kwargs
-            kwargs = output[kwargs_start + 2:output.find(')')]
+            kwargs = output[kwargs_start:output.find(')')]
             kwargs = ast.literal_eval(kwargs)
         else:
             kwargs = {}
         return kwargs
-
-    def _get_plot_arguments(self, i, j, output):
-        attribute = output[:i]
-        # TODO: WHy are there two attributes here?
-        filtered_attribute = VALID_ATTRIBUTES.get(attribute,
-                                                  attribute)
-        args = output[i + 1:j]
-        if args != '':
-            args = args.split(', ')
-
-            print(args)
-            for i, arg in enumerate(args):
-                if sum(cc.isalpha() for cc in arg) == 0:
-                    # Numbers
-                    args[i] = float(arg)
-                else:
-                    args[i] = arg.replace('"', '').replace('\'', '')
-        else:
-            args = ()
-        return args, filtered_attribute
 
     def sresPLOTcreator(self):
         # We create the plot with matplotlib.
@@ -748,9 +897,9 @@ class IPythonKernel(KernelBase):
         self.fig, self.ax = (None, None)
         self.sresliveiteration = 0
 
-    def sendPLOT(self, update_id=None):
+    def sendPLOT(self, update_id=None) -> int:
         if self.sresstartedplot == 0:
-            return None
+            return 0
 
         # We create a PNG out of this plot.
         png = _to_png(self.fig)
@@ -816,6 +965,383 @@ class IPythonKernel(KernelBase):
             return plot_uuid  # Return new UUID for futre reference
             # logging.debug(f'Created new display data')
 
+        return 1
+
+    def interpretpercentline(self, percentline, cellcontents):
+        try:
+            percentstringargs = shlex.split(percentline)
+        except ValueError as e:
+            self.sres("\n\n***Bad percentcommand [%s]\n" % str(e), 31)
+            self.sres(percentline)
+            return None
+
+        percentcommand = percentstringargs[0]
+
+        if percentcommand == ap_bypass.prog:
+            self.use_micropython = False
+
+        if percentcommand == ap_serialconnect.prog:
+            apargs = parseap(ap_serialconnect, percentstringargs[1:])
+
+            self.dc.disconnect(apargs.verbose)
+            self.dc.serialconnect(apargs.port, apargs.baud, apargs.verbose)
+            if self.dc.workingserial:
+                if not apargs.raw:
+                    if self.dc.enterpastemode(verbose=apargs.verbose):
+                        self.sresSYS("Ready.\n")
+                    else:
+                        self.sres("Disconnecting [paste mode not working]\n",
+                                  31)
+                        self.dc.disconnect(verbose=apargs.verbose)
+                        self.sresSYS("  (You may need to reset the device)")
+                        cellcontents = ""
+            else:
+                cellcontents = ""
+            return cellcontents.strip() and cellcontents or None
+
+        if percentcommand == ap_websocketconnect.prog:
+            apargs = parseap(ap_websocketconnect, percentstringargs[1:])
+            if apargs.password is None and not apargs.raw:
+                self.sres(ap_websocketconnect.format_help())
+                return None
+            self.dc.websocketconnect(apargs.websocketurl)
+            if self.dc.workingwebsocket:
+                self.sresSYS("** WebSocket connected **\n", 32)
+                if not apargs.raw:
+                    pline = self.dc.workingwebsocket.recv()
+                    self.sres(pline)
+                    if pline == 'Password: ' and apargs.password is not None:
+                        self.dc.workingwebsocket.send(apargs.password)
+                        self.dc.workingwebsocket.send("\r\n")
+                        res = self.dc.workingserialreadall()
+                        self.sres(res)  # '\r\nWebREPL connected\r\n>>> '
+                        if not apargs.raw:
+                            if self.dc.enterpastemode(apargs.verbose):
+                                self.sresSYS("Ready.\n")
+                            else:
+                                self.sres(
+                                    "Disconnecting [paste mode not working]\n",
+                                    31)
+                                self.dc.disconnect(verbose=apargs.verbose)
+                                self.sres(
+                                    "  (You may need to reset the device)")
+                                cellcontents = ""
+            else:
+                cellcontents = ""
+            return cellcontents.strip() and cellcontents or None
+
+        # this is the direct socket kind, not attached to a webrepl
+        if percentcommand == ap_socketconnect.prog:
+            apargs = parseap(ap_socketconnect, percentstringargs[1:])
+            self.dc.socketconnect(apargs.ipnumber, apargs.portnumber)
+            if self.dc.workingsocket:
+                self.sres("\n ** Socket connected **\n\n", 32)
+                if apargs.verbose:
+                    self.sres(str(self.dc.workingsocket))
+                self.sres("\n")
+                # if not apargs.raw:
+                #    self.dc.enterpastemode()
+            return cellcontents.strip() and cellcontents or None
+
+        if percentcommand == ap_esptool.prog:
+            apargs = parseap(ap_esptool, percentstringargs[1:])
+            if apargs and (apargs.espcommand == "erase" or apargs.binfile):
+                self.dc.esptool(apargs.espcommand, apargs.port, apargs.binfile)
+            else:
+                self.sres(ap_esptool.format_help())
+                self.sres(
+                    "Please download the bin file from https://micropython.org/download/#{}".format(
+                        apargs.espcommand if apargs else ""))
+            return cellcontents.strip() and cellcontents or None
+
+        if percentcommand == ap_writefilepc.prog:
+            apargs = parseap(ap_writefilepc, percentstringargs[1:])
+            if apargs:
+                if apargs.append:
+                    self.sres("Appending to {}\n\n".format(
+                        apargs.destinationfilename), asciigraphicscode=32)
+                    fout = open(apargs.destinationfilename, ("a"))
+                    fout.write("\n")
+                else:
+                    self.sres(
+                        "Writing {}\n\n".format(apargs.destinationfilename),
+                        asciigraphicscode=32)
+                    fout = open(apargs.destinationfilename, ("w"))
+
+                fout.write(cellcontents)
+                fout.close()
+            else:
+                self.sres(ap_writefilepc.format_help())
+            if not apargs.execute:
+                return None
+            return cellcontents  # should add in some blank lines at top to get errors right
+
+        if percentcommand == "%mpy-cross":
+            apargs = parseap(ap_mpycross, percentstringargs[1:])
+            if apargs and apargs.set_exe:
+                self.mpycrossexe = apargs.set_exe
+            elif apargs.pyfile:
+                if self.mpycrossexe:
+                    self.dc.mpycross(self.mpycrossexe, apargs.pyfile)
+                else:
+                    self.sres("Cross compiler executable not yet set\n", 31)
+                    self.sres(
+                        "try: %mpy-cross --set-exe /home/julian/extrepositories/micropython/mpy-cross/mpy-cross\n")
+                if self.mpycrossexe:
+                    self.mpycrossexe = "/home/julian/extrepositories/micropython/mpy-cross/mpy-cross"
+            else:
+                self.sres(ap_mpycross.format_help())
+            return cellcontents.strip() and cellcontents or None
+
+        if percentcommand == "%comment":
+            self.sres(" ".join(percentstringargs[1:]), asciigraphicscode=32)
+            return cellcontents.strip() and cellcontents or None
+
+        if percentcommand == "%lsmagic":
+            self.sres(re.sub("usage: ", "", ap_capture.format_usage()))
+            self.sres("    records output to a file\n\n")
+            self.sres("%comment\n    print this into output\n\n")
+            self.sres(re.sub("usage: ", "", ap_disconnect.format_usage()))
+            self.sres("    disconnects from web/serial connection\n\n")
+            self.sres(re.sub("usage: ", "", ap_esptool.format_usage()))
+            self.sres("    commands for flashing your esp-device\n\n")
+            self.sres(re.sub("usage: ", "", ap_fetchfile.format_usage()))
+            self.sres("    fetch and save a file from the device\n\n")
+            self.sres(re.sub("usage: ", "", ap_ls.format_usage()))
+            self.sres("    list files on the device\n\n")
+            self.sres("%lsmagic\n    list magic commands\n\n")
+            self.sres(re.sub("usage: ", "", ap_mpycross.format_usage()))
+            self.sres("    cross-compile a .py file to a .mpy file\n\n")
+            self.sres(re.sub("usage: ", "", ap_readbytes.format_usage()))
+            self.sres("    does serial.read_all()\n\n")
+            self.sres("%rebootdevice\n    reboots device\n\n")
+            self.sres(re.sub("usage: ", "", ap_sendtofile.format_usage()))
+            self.sres(
+                "    send cell contents or file/direcectory to the device\n\n")
+            self.sres(re.sub("usage: ", "", ap_serialconnect.format_usage()))
+            self.sres("    connects to a device over USB wire\n\n")
+            self.sres(re.sub("usage: ", "", ap_socketconnect.format_usage()))
+            self.sres("    connects to a socket of a device over wifi\n\n")
+            self.sres(
+                "%suppressendcode\n    doesn't send x04 or wait to read after sending the contents of the cell\n")
+            self.sres(
+                "  (assists for debugging using %writebytes and %readbytes)\n\n")
+            self.sres(re.sub("usage: ", "", ap_websocketconnect.format_usage()))
+            self.sres(
+                "    connects to the webREPL websocket of an ESP8266 over wifi\n")
+            self.sres(
+                "    websocketurl defaults to ws://192.168.4.1:8266 but be sure to be connected\n\n")
+            self.sres(re.sub("usage: ", "", ap_writebytes.format_usage()))
+            self.sres(
+                "    does serial.write() of the python quoted string given\n\n")
+            self.sres(re.sub("usage: ", "", ap_writefilepc.format_usage()))
+            self.sres("    write contents of cell to a file\n\n")
+
+            return None
+
+        if percentcommand == ap_disconnect.prog:
+            apargs = parseap(ap_disconnect, percentstringargs[1:])
+            self.dc.disconnect(raw=apargs.raw, verbose=True)
+            return None
+
+        # remaining commands require a connection
+        if not self.dc.serialexists():
+            return cellcontents
+
+        if percentcommand == ap_plot.prog:
+            apargs = parseap(ap_plot, percentstringargs[1:])
+            if apargs.mode == 'matplotlib':
+                self.sresplotmode = 1  # matplotlib-esque (array) plotting
+            elif apargs.mode == 'live':
+                self.sresplotmode = 2  # live plotting
+
+            elif apargs.mode == 'livescroll':
+                self.sresplotmode = 4  # live plotting with auto-scroll
+
+            elif apargs.mode == 'scope':
+                self.sresplotmode = 3  # scope-style
+                self.sres_trigger_lvl = apargs.trigger_lvl
+                self.sres_trig_RISE = True if apargs.type == 'RISE' else False
+                self.sres_trig_chan = apargs.chan
+
+            elif apargs.mode == 'none':
+                self.sresplotmode = 0
+            else:
+                self.sresplotmode = DEFAULT_PLOT_MODE
+            return cellcontents
+
+        if percentcommand == ap_capture.prog:
+            apargs = parseap(ap_capture, percentstringargs[1:])
+            if apargs:
+                self.sres("Writing output to file {}\n\n".format(
+                    apargs.outputfilename), asciigraphicscode=32)
+                self.srescapturedoutputfile = open(apargs.outputfilename, "w")
+                self.srescapturemode = (
+                    3 if apargs.QUIET else (2 if apargs.quiet else 1))
+                self.srescapturedlinecount = 0
+            else:
+                self.sres(ap_capture.format_help())
+            return cellcontents
+
+        if percentcommand == ap_writebytes.prog:
+            # (not effectively using the --binary setting)
+            apargs = parseap(ap_writebytes, percentstringargs[1:])
+            if apargs:
+                bytestosend = apargs.stringtosend.encode().decode(
+                    "unicode_escape").encode()
+                res = self.dc.writebytes(bytestosend)
+                if apargs.verbose:
+                    self.sres(res, asciigraphicscode=34)
+            else:
+                self.sres(ap_writebytes.format_help())
+            return cellcontents.strip() and cellcontents or None
+
+        if percentcommand == ap_readbytes.prog:
+            # (not effectively using the --binary setting)
+            apargs = parseap(ap_readbytes, percentstringargs[1:])
+            time.sleep(
+                0.1)  # just give it a moment if running on from a series of values (could use an --expect keyword)
+            l = self.dc.workingserialreadall()
+            if apargs.binary:
+                self.sres(repr(l))
+            elif type(l) == bytes:
+                self.sres(l.decode(errors="ignore"))
+            else:
+                self.sres(l)  # strings come back from webrepl
+            return cellcontents.strip() and cellcontents or None
+
+        if percentcommand == "%rebootdevice":
+            self.dc.sendrebootmessage()
+            self.dc.enterpastemode()
+            return cellcontents.strip() and cellcontents or None
+
+        if percentcommand == "%reboot":
+            self.sres("Did you mean %rebootdevice?\n", 31)
+            return None
+
+        if percentcommand == "%%writetofile" or percentcommand == "%writefile":
+            self.sres("Did you mean %%writefile?\n", 31)
+            return None
+
+        if percentcommand == "%serialdisconnect":
+            self.sres("Did you mean %disconnect?\n", 31)
+            return None
+
+        if percentcommand == "%sendbytes":
+            self.sres("Did you mean %writebytes?\n", 31)
+            return None
+
+        if percentcommand == "%reboot":
+            self.sres("Did you mean %rebootdevice?\n", 31)
+            return None
+
+        if percentcommand in ("%savetofile", "%savefile", "%sendfile"):
+            self.sres("Did you mean to write %sendtofile?\n", 31)
+            return None
+
+        if percentcommand in ("%readfile", "%fetchfromfile"):
+            self.sres("Did you mean to write %fetchfile?\n", 31)
+            return None
+
+        if percentcommand == ap_fetchfile.prog:
+            apargs = parseap(ap_fetchfile, percentstringargs[1:])
+            if apargs:
+                fetchedcontents = self.dc.fetchfile(apargs.sourcefilename,
+                                                    apargs.binary, apargs.quiet)
+                if apargs.print:
+                    self.sres(fetchedcontents.decode() if type(
+                        fetchedcontents) == bytes else fetchedcontents,
+                              clear_output=True)
+
+                if (apargs.destinationfilename or (
+                        not apargs.print and not apargs.load)) and fetchedcontents:
+                    dstfile = apargs.destinationfilename or os.path.basename(
+                        apargs.sourcefilename)
+                    self.sres("Saving file to {}".format(repr(dstfile)))
+                    fout = open(dstfile, "wb" if apargs.binary else "w")
+                    fout.write(fetchedcontents)
+                    fout.close()
+
+                if apargs.load:
+                    fcontents = fetchedcontents.decode() if type(
+                        fetchedcontents) == bytes else fetchedcontents
+                    if not apargs.quiet:
+                        fcontents = "#%s\n\n%s" % (
+                        " ".join(percentstringargs), fcontents)
+                    set_next_input_payload = {"source": "set_next_input",
+                                              "text": fcontents,
+                                              "replace": True}
+                    return set_next_input_payload
+
+            else:
+                self.sres(ap_fetchfile.format_help())
+            return None
+
+        if percentcommand == ap_ls.prog:
+            apargs = parseap(ap_ls, percentstringargs[1:])
+            if apargs:
+                self.dc.listdir(apargs.dirname or "", apargs.recurse)
+            else:
+                self.sres(ap_ls.format_help())
+            return None
+
+        if percentcommand == ap_sendtofile.prog:
+            apargs = parseap(ap_sendtofile, percentstringargs[1:])
+            if apargs and not (
+                    apargs.source == "<<cellcontents>>" and not apargs.destinationfilename) and (
+                    apargs.source != None):
+
+                destfn = apargs.destinationfilename
+
+                def sendtofile(filename, contents):
+                    self.dc.sendtofile(filename, apargs.mkdir, apargs.append,
+                                       apargs.binary, apargs.quiet, contents)
+
+                if apargs.source == "<<cellcontents>>":
+                    filecontents = cellcontents
+                    if not apargs.execute:
+                        cellcontents = None
+                    sendtofile(destfn, filecontents)
+
+                else:
+                    mode = "rb" if apargs.binary else "r"
+                    if not destfn:
+                        destfn = os.path.basename(apargs.source)
+                    elif destfn[-1] == "/":
+                        destfn += os.path.basename(apargs.source)
+
+                    if os.path.isfile(apargs.source):
+                        filecontents = open(apargs.source, mode).read()
+                        if apargs.execute:
+                            self.sres("Cannot excecute sourced file\n", 31)
+                        sendtofile(destfn, filecontents)
+
+                    elif os.path.isdir(apargs.source):
+                        if apargs.execute:
+                            self.sres("Cannot excecute folder\n", 31)
+                        for root, dirs, files in os.walk(apargs.source):
+                            for fn in files:
+                                skip = False
+                                fp = os.path.join(root, fn)
+                                relpath = os.path.relpath(fp, apargs.source)
+                                if relpath.endswith('.py'):
+                                    # Check for compiled copy, skip py if exists
+                                    if os.path.exists(fp[:-3] + '.mpy'):
+                                        skip = True
+                                if not skip:
+                                    destpath = os.path.join(destfn,
+                                                            relpath).replace(
+                                        '\\', '/')
+                                    filecontents = open(os.path.join(root, fn),
+                                                        mode).read()
+                                    sendtofile(destpath, filecontents)
+            else:
+                self.sres(ap_sendtofile.format_help())
+            return cellcontents  # allows for repeat %sendtofile in same cell
+
+        self.sres("Unrecognized percentline {}\n".format([percentline]), 31)
+        return cellcontents
+
     def runnormalcell(self, cellcontents, bsuppressendcode):
         cmdlines = cellcontents.splitlines(True)
         r = self.dc.workingserialreadall()
@@ -843,7 +1369,6 @@ class IPythonKernel(KernelBase):
             self.dc.writebytes(b'\r\x04')
             self.dc.receivestream(bseekokay=True, isplotting=self.sresplotmode)
 
-
     def sendcommand(self, cellcontents):
         bsuppressendcode = False  # can't yet see how to get this signal through
 
@@ -865,6 +1390,7 @@ class IPythonKernel(KernelBase):
 
             # discards the %command and a single blank line
             # (if there is one) from the cell contents
+
             cellcontents = self.interpretpercentline(
                 mpercentline.group(1),
                 cellcontents[mpercentline.end():])
@@ -888,16 +1414,45 @@ class IPythonKernel(KernelBase):
         return None
 
     async def do_execute(
-        self,
-        code,
-        silent,
-        store_history=True,
-        user_expressions=None,
-        allow_stdin=False,
-        *,
-        cell_id=None,
+            self,
+            code,
+            silent,
+            store_history=True,
+            user_expressions=None,
+            allow_stdin=False,
+            *,
+            cell_id=None,
     ):
         """Handle code execution."""
+        self.use_micropython = True  # Assume true
+
+        # extract any %-commands we have here at the start (or ending?),
+        # tolerating pure comment lines and white space before the first %
+        # (if there's no %-command in there, then no lines at the front get
+        # dropped due to being comments)
+        for _ in range(10):
+            mpercentline = re.match(
+                "(?:(?:\s*|(?:\s*#.*\n))*)(%.*)\n?(?:[ \r]*\n)?",
+                code)
+            if not mpercentline:
+                break
+
+            # discards the %command and a single blank line
+            # (if there is one) from the cell contents
+            percentline = mpercentline.group(1)
+            try:
+                percentstringargs = shlex.split(percentline)
+            except ValueError as e:
+                self.sres("\n\n***Bad percentcommand [%s]\n" % str(e), 31)
+                self.sres(percentline)
+                return None
+
+            percentcommand = percentstringargs[0]
+
+            if percentcommand == ap_bypass.prog:
+                self.use_micropython = False
+                code = code[mpercentline.end():]
+                break
 
         if self.use_micropython:
             self.silent = silent
@@ -1007,12 +1562,14 @@ class IPythonKernel(KernelBase):
             self._forward_input(allow_stdin)
 
             reply_content: t.Dict[str, t.Any] = {}
-            if hasattr(shell, "run_cell_async") and hasattr(shell, "should_run_async"):
+            if hasattr(shell, "run_cell_async") and hasattr(shell,
+                                                            "should_run_async"):
                 run_cell = shell.run_cell_async
                 should_run_async = shell.should_run_async
                 with_cell_id = _accepts_cell_id(run_cell)
             else:
                 should_run_async = lambda cell: False  # noqa
+
                 # older IPython,
                 # use blocking run_cell and wrap it in coroutine
 
@@ -1032,14 +1589,14 @@ class IPythonKernel(KernelBase):
                     preprocessing_exc_tuple = sys.exc_info()
 
                 if (
-                    _asyncio_runner
-                    and shell.loop_runner is _asyncio_runner
-                    and asyncio.get_event_loop().is_running()
-                    and should_run_async(
-                        code,
-                        transformed_cell=transformed_cell,
-                        preprocessing_exc_tuple=preprocessing_exc_tuple,
-                    )
+                        _asyncio_runner
+                        and shell.loop_runner is _asyncio_runner
+                        and asyncio.get_event_loop().is_running()
+                        and should_run_async(
+                    code,
+                    transformed_cell=transformed_cell,
+                    preprocessing_exc_tuple=preprocessing_exc_tuple,
+                )
                 ):
                     if with_cell_id:
                         coro = run_cell(
@@ -1081,7 +1638,8 @@ class IPythonKernel(KernelBase):
                             cell_id=cell_id,
                         )
                     else:
-                        res = shell.run_cell(code, store_history=store_history, silent=silent)
+                        res = shell.run_cell(code, store_history=store_history,
+                                             silent=silent)
             finally:
                 self._restore_input()
 
@@ -1101,7 +1659,8 @@ class IPythonKernel(KernelBase):
                 )
 
                 # FIXME: deprecated piece for ipyparallel (remove in 5.0):
-                e_info = dict(engine_uuid=self.ident, engine_id=self.int_id, method="execute")
+                e_info = dict(engine_uuid=self.ident, engine_id=self.int_id,
+                              method="execute")
                 reply_content["engine_info"] = e_info
 
             # Return the execution counter so clients can display prompts
@@ -1116,7 +1675,8 @@ class IPythonKernel(KernelBase):
             # At this point, we can tell whether the main code execution succeeded
             # or not.  If it did, we proceed to evaluate user_expressions
             if reply_content["status"] == "ok":
-                reply_content["user_expressions"] = shell.user_expressions(user_expressions or {})
+                reply_content["user_expressions"] = shell.user_expressions(
+                    user_expressions or {})
             else:
                 # If there was an error, don't even try to compute expressions
                 reply_content["user_expressions"] = {}
@@ -1213,7 +1773,8 @@ class IPythonKernel(KernelBase):
                     omit_sections=omit_sections,
                 )
             else:
-                bundle = self.shell.object_inspect_mime(name, detail_level=detail_level)
+                bundle = self.shell.object_inspect_mime(name,
+                                                        detail_level=detail_level)
             reply_content["data"].update(bundle)
             if not self.shell.enable_html_pager:
                 reply_content["data"].pop("text/html")
@@ -1224,16 +1785,16 @@ class IPythonKernel(KernelBase):
         return reply_content
 
     def do_history(
-        self,
-        hist_access_type,
-        output,
-        raw,
-        session=0,
-        start=0,
-        stop=None,
-        n=None,
-        pattern=None,
-        unique=False,
+            self,
+            hist_access_type,
+            output,
+            raw,
+            session=0,
+            start=0,
+            stop=None,
+            n=None,
+            pattern=None,
+            unique=False,
     ):
         """Handle code history."""
         if hist_access_type == "tail":
@@ -1265,7 +1826,8 @@ class IPythonKernel(KernelBase):
 
     def do_is_complete(self, code):
         """Handle an is_complete request."""
-        transformer_manager = getattr(self.shell, "input_transformer_manager", None)
+        transformer_manager = getattr(self.shell, "input_transformer_manager",
+                                      None)
         if transformer_manager is None:
             # input_splitter attribute is deprecated
             transformer_manager = self.shell.input_splitter
@@ -1278,7 +1840,8 @@ class IPythonKernel(KernelBase):
     def do_apply(self, content, bufs, msg_id, reply_metadata):
         """Handle an apply request."""
         try:
-            from ipyparallel.serialize import serialize_object, unpack_apply_message
+            from ipyparallel.serialize import serialize_object, \
+                unpack_apply_message
         except ImportError:
             from .serialize import serialize_object, unpack_apply_message
 
@@ -1322,7 +1885,8 @@ class IPythonKernel(KernelBase):
                 "evalue": str(e),
             }
             # FIXME: deprecated piece for ipyparallel (remove in 5.0):
-            e_info = dict(engine_uuid=self.ident, engine_id=self.int_id, method="apply")
+            e_info = dict(engine_uuid=self.ident, engine_id=self.int_id,
+                          method="apply")
             reply_content["engine_info"] = e_info
 
             self.send_response(
@@ -1331,7 +1895,8 @@ class IPythonKernel(KernelBase):
                 reply_content,
                 ident=self._topic("error"),
             )
-            self.log.info("Exception in apply request:\n%s", "\n".join(reply_content["traceback"]))
+            self.log.info("Exception in apply request:\n%s",
+                          "\n".join(reply_content["traceback"]))
             result_buf = []
             reply_content["status"] = "error"
         else:
@@ -1356,7 +1921,7 @@ class Kernel(IPythonKernel):
         import warnings
 
         warnings.warn(
-            "Kernel is a deprecated alias of ipykernel.ipkernel.IPythonKernel",
+            "Kernel is a deprecated alias of alpaca_kernel.ipkernel.IPythonKernel",
             DeprecationWarning,
             stacklevel=2,
         )

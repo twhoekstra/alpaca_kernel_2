@@ -23,7 +23,7 @@ def get_connection_file(app=None):
     from traitlets.utils import filefind
 
     if app is None:
-        from ipykernel.kernelapp import IPKernelApp
+        from alpaca_kernel.kernelapp import IPKernelApp
 
         if not IPKernelApp.initialized():
             msg = "app not specified, and not in a running Kernel"

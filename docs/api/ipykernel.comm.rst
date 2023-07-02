@@ -1,17 +1,17 @@
-ipykernel.comm package
+alpaca_kernel.comm package
 ======================
 
 Submodules
 ----------
 
 
-.. automodule:: ipykernel.comm.comm
+.. automodule:: alpaca_kernel.comm.comm
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.comm.manager
+.. automodule:: alpaca_kernel.comm.manager
    :members:
    :undoc-members:
    :show-inheritance:
@@ -19,7 +19,7 @@ Submodules
 Module contents
 ---------------
 
-.. automodule:: ipykernel.comm
+.. automodule:: alpaca_kernel.comm
    :members:
    :undoc-members:
    :show-inheritance:

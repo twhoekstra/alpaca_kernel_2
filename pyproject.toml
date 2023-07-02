@@ -3,12 +3,12 @@ requires = ["hatchling>=1.4", "jupyter_client>=6"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ipykernel"
+name = "alpaca_kernel_2"
 dynamic = ["version"]
-authors = [{name = "IPython Development Team", email = "ipython-dev@scipy.org"}]
+authors = [{name = "Thijn Hoekstra", email = "t.w.hoekstra@student.tudelft.nl"}]
 license = {file = "LICENSE"}
 readme = "README.md"
-description = "IPython Kernel for Jupyter"
+description = "Alpaca Kernel for Jupyter with IPython support"
 keywords = ["Interactive", "Interpreter", "Shell", "Web"]
 classifiers = [
     "Intended Audience :: Developers",
@@ -39,6 +39,9 @@ dependencies = [
     "pyzmq>=20",
     "psutil",
     "packaging",
+    "pyserial",
+    "numpy",
+    "matplotlib"
 ]
 
 [project.optional-dependencies]
@@ -71,7 +74,7 @@ pyqt5 = ["pyqt5"]
 pyside6 = ["pyside6"]
 
 [tool.hatch.version]
-path = "ipykernel/_version.py"
+path = "alpaca_kernel/_version.py"
 
 # Used to call hatch_build.py
 [tool.hatch.build.hooks.custom]
@@ -80,13 +83,13 @@ path = "ipykernel/_version.py"
 "data_kernelspec" = "share/jupyter/kernels/python3"
 
 [tool.hatch.build.force-include]
-"./ipykernel_launcher.py" = "ipykernel_launcher.py"
+"./alpaca_kernel_launcher.py" = "alpaca_kernel_launcher.py"
 
 [tool.hatch.envs.docs]
 features = ["docs"]
 [tool.hatch.envs.docs.scripts]
 build = "make -C docs html SPHINXOPTS='-W'"
-api = "sphinx-apidoc -o docs/api -f -E ipykernel ipykernel/tests ipykernel/inprocess/tests ipykernel/datapub.py ipykernel/pickleutil.py ipykernel/serialize.py ipykernel/gui ipykernel/pylab"
+api = "sphinx-apidoc -o docs/api -f -E alpaca_kernel alpaca_kernel/tests alpaca_kernel/inprocess/tests alpaca_kernel/datapub.py alpaca_kernel/pickleutil.py alpaca_kernel/serialize.py alpaca_kernel/gui alpaca_kernel/pylab"
 
 [tool.hatch.envs.test]
 features = ["test"]
@@ -98,7 +101,7 @@ nowarn = "test -W default {args}"
 [tool.hatch.envs.cov]
 features = ["test", "cov"]
 [tool.hatch.envs.cov.scripts]
-test = "python -m pytest -vv --cov ipykernel --cov-branch --cov-report term-missing:skip-covered {args}"
+test = "python -m pytest -vv --cov alpaca_kernel --cov-branch --cov-report term-missing:skip-covered {args}"
 nowarn = "test -W default {args}"
 
 [[tool.hatch.envs.cov.matrix]]
@@ -150,10 +153,10 @@ warn_return_any = true
 warn_unused_ignores = true
 
 [tool.pytest.ini_options]
-addopts = "-raXs --durations 10 --color=yes --doctest-modules --ignore=ipykernel/pylab/backend_inline.py --ignore=ipykernel/pylab/config.py --ignore=ipykernel/gui/gtk3embed.py --ignore=ipykernel/gui/gtkembed.py --ignore=ipykernel/datapub.py --ignore=ipykernel/log.py --ignore=ipykernel/pickleutil.py --ignore=ipykernel/serialize.py --ignore=ipykernel/_eventloop_macos.py"
+addopts = "-raXs --durations 10 --color=yes --doctest-modules --ignore=alpaca_kernel/pylab/backend_inline.py --ignore=alpaca_kernel/pylab/config.py --ignore=alpaca_kernel/gui/gtk3embed.py --ignore=alpaca_kernel/gui/gtkembed.py --ignore=alpaca_kernel/datapub.py --ignore=alpaca_kernel/log.py --ignore=alpaca_kernel/pickleutil.py --ignore=alpaca_kernel/serialize.py --ignore=alpaca_kernel/_eventloop_macos.py"
 testpaths = [
-    "ipykernel/tests",
-    "ipykernel/inprocess/tests"
+    "alpaca_kernel/tests",
+    "alpaca_kernel/inprocess/tests"
 ]
 asyncio_mode = "auto"
 timeout = 300
@@ -193,18 +196,18 @@ exclude_lines = [
 
 [tool.coverage.run]
 relative_files = true
-source = ["ipykernel"]
+source = ["alpaca_kernel"]
 omit = [
-  "ipykernel/tests/*",
-  "ipykernel/datapub.py",
-  "ipykernel/debugger.py",
-  "ipykernel/eventloops.py",
-  "ipykernel/log.py",
-  "ipykernel/pickleutil.py",
-  "ipykernel/serialize.py",
-  "ipykernel/inprocess/tests/*",
-  "ipykernel/gui/*",
-  "ipykernel/pylab/*",
+  "alpaca_kernel/tests/*",
+  "alpaca_kernel/datapub.py",
+  "alpaca_kernel/debugger.py",
+  "alpaca_kernel/eventloops.py",
+  "alpaca_kernel/log.py",
+  "alpaca_kernel/pickleutil.py",
+  "alpaca_kernel/serialize.py",
+  "alpaca_kernel/inprocess/tests/*",
+  "alpaca_kernel/gui/*",
+  "alpaca_kernel/pylab/*",
 ]
 
 [tool.black]
@@ -302,7 +305,7 @@ unfixable = [
 # PLC1901 `stderr == ""` can be simplified to `not stderr` as an empty string is falsey
 # B018 Found useless expression. Either assign it to a variable or remove it.
 # S603 `subprocess` call: check for execution of untrusted input
-"ipykernel/tests/*" = ["B011", "F841", "C408", "E402", "T201", "B007", "N802", "F841", "EM101",
+"alpaca_kernel/tests/*" = ["B011", "F841", "C408", "E402", "T201", "B007", "N802", "F841", "EM101",
     "EM102", "EM103", "PLR2004", "PLW0603", "PLW2901", "PLC1901", "B018", "S603"]
 
 [tool.interrogate]
@@ -316,5 +319,5 @@ fail-under=95
 exclude = ["docs", "*/tests"]
 
 [tool.check-wheel-contents]
-toplevel = ["ipykernel/", "ipykernel_launcher.py"]
+toplevel = ["alpaca_kernel/", "alpaca_kernel_launcher.py"]
 ignore = ["W002"]

@@ -34,9 +34,9 @@ from jupyter_client.session import Session, extract_header
 from jupyter_core.paths import jupyter_runtime_dir
 from traitlets import Any, CBool, CBytes, Dict, Instance, Type, default, observe
 
-from ipykernel import connect_qtconsole, get_connection_file, get_connection_info
-from ipykernel.displayhook import ZMQShellDisplayHook
-from ipykernel.jsonutil import encode_images, json_clean
+from alpaca_kernel import connect_qtconsole, get_connection_file, get_connection_info
+from alpaca_kernel.displayhook import ZMQShellDisplayHook
+from alpaca_kernel.jsonutil import encode_images, json_clean
 
 # -----------------------------------------------------------------------------
 # Functions and classes
@@ -53,7 +53,7 @@ class ZMQDisplayPublisher(DisplayPublisher):
 
     # thread_local:
     # An attribute used to ensure the correct output message
-    # is processed. See ipykernel Issue 113 for a discussion.
+    # is processed. See alpaca_kernel Issue 113 for a discussion.
     _thread_local = Any()
 
     def set_parent(self, parent):

@@ -1,14 +1,14 @@
 # IPython Kernel for Jupyter
 
-[![Build Status](https://github.com/ipython/ipykernel/actions/workflows/ci.yml/badge.svg?query=branch%3Amain++)](https://github.com/ipython/ipykernel/actions/workflows/ci.yml/badge.svg?query=branch%3Amain++)
-[![Documentation Status](https://readthedocs.org/projects/ipykernel/badge/?version=latest)](http://ipykernel.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://github.com/ipython/alpaca_kernel/actions/workflows/ci.yml/badge.svg?query=branch%3Amain++)](https://github.com/ipython/alpaca_kernel/actions/workflows/ci.yml/badge.svg?query=branch%3Amain++)
+[![Documentation Status](https://readthedocs.org/projects/alpaca_kernel/badge/?version=latest)](http://alpaca_kernel.readthedocs.io/en/latest/?badge=latest)
 
 This package provides the IPython kernel for Jupyter.
 
 ## Installation from source
 
 1. `git clone`
-1. `cd ipykernel`
+1. `cd alpaca_kernel`
 1. `pip install -e ".[test]"`
 
 After that, all normal `ipython` commands will use this newly-installed version of the kernel.
@@ -20,7 +20,7 @@ Follow the instructions from `Installation from source`.
 and then from the root directory
 
 ```bash
-pytest ipykernel
+pytest alpaca_kernel
 ```
 
 ## Running tests with coverage
@@ -30,7 +30,7 @@ Follow the instructions from `Installation from source`.
 and then from the root directory
 
 ```bash
-pytest ipykernel -vv -s --cov ipykernel --cov-branch --cov-report term-missing:skip-covered --durations 10
+pytest alpaca_kernel -vv -s --cov alpaca_kernel --cov-branch --cov-report term-missing:skip-covered --durations 10
 ```
 
 ## About the IPython Development Team

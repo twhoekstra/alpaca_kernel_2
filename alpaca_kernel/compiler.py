@@ -75,7 +75,7 @@ def get_tmp_directory():
     """Get a temp directory."""
     tmp_dir = convert_to_long_pathname(tempfile.gettempdir())
     pid = os.getpid()
-    return tmp_dir + os.sep + "ipykernel_" + str(pid)
+    return tmp_dir + os.sep + "alpaca_kernel_" + str(pid)
 
 
 def get_tmp_hash_seed():
@@ -86,7 +86,7 @@ def get_tmp_hash_seed():
 
 def get_file_name(code):
     """Get a file name."""
-    cell_name = os.environ.get("IPYKERNEL_CELL_NAME")
+    cell_name = os.environ.get("alpaca_kernel_CELL_NAME")
     if cell_name is None:
         name = murmur2_x86(code, get_tmp_hash_seed())
         cell_name = get_tmp_directory() + os.sep + str(name) + ".py"

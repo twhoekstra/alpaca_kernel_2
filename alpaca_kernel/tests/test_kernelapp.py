@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from ipykernel.kernelapp import IPKernelApp
+from alpaca_kernel.kernelapp import IPKernelApp
 
 from .conftest import MockKernel
 
@@ -52,7 +52,7 @@ def test_trio_loop():
     app = IPKernelApp(trio_loop=True)
     app.kernel = MockKernel()
     app.init_sockets()
-    with patch("ipykernel.trio_runner.TrioRunner.run", lambda _: None):
+    with patch("alpaca_kernel.trio_runner.TrioRunner.run", lambda _: None):
         app.start()
     app.cleanup_connection_file()
     app.io_loop.add_callback(app.io_loop.stop)

@@ -1,0 +1,6 @@
+ipython
+ipywidgets
+tornado
+pyserial
+numpy
+matplotlib

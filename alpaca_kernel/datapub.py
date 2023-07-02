@@ -4,7 +4,7 @@
 import warnings
 
 warnings.warn(
-    "ipykernel.datapub is deprecated. It has moved to ipyparallel.datapub",
+    "alpaca_kernel.datapub is deprecated. It has moved to ipyparallel.datapub",
     DeprecationWarning,
     stacklevel=2,
 )
@@ -15,14 +15,14 @@ warnings.warn(
 from traitlets import Any, CBytes, Dict, Instance
 from traitlets.config import Configurable
 
-from ipykernel.jsonutil import json_clean
+from alpaca_kernel.jsonutil import json_clean
 
 try:
     # available since ipyparallel 5.0.0
     from ipyparallel.serialize import serialize_object
 except ImportError:
-    # Deprecated since ipykernel 4.3.0
-    from ipykernel.serialize import serialize_object
+    # Deprecated since alpaca_kernel 4.3.0
+    from alpaca_kernel.serialize import serialize_object
 
 from jupyter_client.session import Session, extract_header
 
@@ -73,11 +73,11 @@ def publish_data(data):
         The data to be published. Think of it as a namespace.
     """
     warnings.warn(
-        "ipykernel.datapub is deprecated. It has moved to ipyparallel.datapub",
+        "alpaca_kernel.datapub is deprecated. It has moved to ipyparallel.datapub",
         DeprecationWarning,
         stacklevel=2,
     )
 
-    from ipykernel.zmqshell import ZMQInteractiveShell
+    from alpaca_kernel.zmqshell import ZMQInteractiveShell
 
     ZMQInteractiveShell.instance().data_pub.publish_data(data)

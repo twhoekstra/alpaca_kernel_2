@@ -10,7 +10,7 @@ from unittest.mock import patch
 import pytest
 import zmq
 
-from ipykernel.heartbeat import Heartbeat
+from alpaca_kernel.heartbeat import Heartbeat
 
 
 def test_port_bind_failure_raises():

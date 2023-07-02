@@ -7,7 +7,7 @@ import sys
 import tempfile
 from unittest.mock import patch
 
-from ipykernel.kernelspec import install
+from alpaca_kernel.kernelspec import install
 
 pjoin = os.path.join
 

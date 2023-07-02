@@ -1,4 +1,4 @@
-ipykernel package
+alpaca_kernel package
 =================
 
 Subpackages
@@ -7,116 +7,116 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   ipykernel.comm
-   ipykernel.inprocess
+   alpaca_kernel.comm
+   alpaca_kernel.inprocess
 
 Submodules
 ----------
 
 
-.. automodule:: ipykernel.compiler
+.. automodule:: alpaca_kernel.compiler
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.connect
+.. automodule:: alpaca_kernel.connect
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.control
+.. automodule:: alpaca_kernel.control
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.debugger
+.. automodule:: alpaca_kernel.debugger
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.displayhook
+.. automodule:: alpaca_kernel.displayhook
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.embed
+.. automodule:: alpaca_kernel.embed
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.eventloops
+.. automodule:: alpaca_kernel.eventloops
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.heartbeat
+.. automodule:: alpaca_kernel.heartbeat
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.iostream
+.. automodule:: alpaca_kernel.iostream
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.ipkernel
+.. automodule:: alpaca_kernel.ipkernel
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.jsonutil
+.. automodule:: alpaca_kernel.jsonutil
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.kernelapp
+.. automodule:: alpaca_kernel.kernelapp
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.kernelbase
+.. automodule:: alpaca_kernel.kernelbase
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.kernelspec
+.. automodule:: alpaca_kernel.kernelspec
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.log
+.. automodule:: alpaca_kernel.log
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.parentpoller
+.. automodule:: alpaca_kernel.parentpoller
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.trio_runner
+.. automodule:: alpaca_kernel.trio_runner
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-.. automodule:: ipykernel.zmqshell
+.. automodule:: alpaca_kernel.zmqshell
    :members:
    :undoc-members:
    :show-inheritance:
@@ -124,7 +124,7 @@ Submodules
 Module contents
 ---------------
 
-.. automodule:: ipykernel
+.. automodule:: alpaca_kernel
    :members:
    :undoc-members:
    :show-inheritance:
