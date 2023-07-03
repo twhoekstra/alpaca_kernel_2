@@ -22,7 +22,6 @@ requirements:
     - traitlets
     - jupyter_client
     - jupyter_core
-    - nest_asyncio
     - tornado
     - appnope
     - pyzmq
