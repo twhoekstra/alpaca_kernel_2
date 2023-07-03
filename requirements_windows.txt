@@ -1,0 +1,16 @@
+alpaca_kernel_2
+ipykernel
+ipywidgets
+jupyter
+markdown
+matplotlib
+numpy
+nbclient
+nbconvert
+nbconvert-core
+nbconvert-pandoc
+nbformat
+nbgrader
+nidaqmx-python
+pyvisa
+scipy
