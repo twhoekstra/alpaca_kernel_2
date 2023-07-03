@@ -7,7 +7,7 @@ This package provides the ALPACA kernel for Jupyter.
 
 1. `conda install -c twh alpaca_kernel_2`'
 2. `conda install ipykernel # Nice to have`
-3. `python -m alpaca install`
+3. `python -m alpaca_kernel install`
 4. `python -m ipykernel install`
 
 ## Installing environment
@@ -17,7 +17,7 @@ This package provides the ALPACA kernel for Jupyter.
 3. `conda config --set channel_priority strict`
 4. `conda create -n my_env --file "requirements_windows.txt" --channel twh`
 5. `conda activate my_env`
-6. `python -m alpaca install`
+6. `python -m alpaca_kernel install`
 7. `python -m ipykernel install`
 
 ## Installation from source (For development)
@@ -25,7 +25,7 @@ This package provides the ALPACA kernel for Jupyter.
 1. `git clone https://github.com/twhoekstra/alpaca_kernel_2.git`
 2. `cd alpaca_kernel_2`
 3. `pip install -e .`
-4. `python -m alpaca install`
+4. `python -m alpaca_kernel install`
 5. `python -m ipykernel install`
 
 ## Demonstration

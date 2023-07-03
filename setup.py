@@ -17,6 +17,7 @@ setup(
     },
     license='MIT',
     packages=find_packages(),
+    package_data={'': ['resources/*', 'resources/*.png']},
     install_requires=[
         'matplotlib',
         'numpy',
