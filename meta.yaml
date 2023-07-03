@@ -16,7 +16,6 @@ requirements:
     - numpy x.x # [not win]
     - matplotlib # [not win]
     - pyserial
-    - debugpy
     - ipython
     - comm
     - traitlets

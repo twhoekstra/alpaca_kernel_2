@@ -21,6 +21,6 @@ setuptools.setup(
         'setuptools',
         'matplotlib',
         'numpy',
-        'ipywidgets',
+        'pyserial',
     ],
 )
