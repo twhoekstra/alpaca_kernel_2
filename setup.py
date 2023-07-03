@@ -1,9 +1,9 @@
-import setuptools
+from setuptools import setup, find_packages
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-setuptools.setup(
+setup(
     name='alpaca_kernel_2',
     version='0.0.1',
     author='Thijn Hoekstra',
@@ -16,7 +16,7 @@ setuptools.setup(
         "Bug Tracker": "https://github.com/twhoekstra/alpaca_kernel_2"
     },
     license='MIT',
-    packages=['alpaca_kernel'],
+    packages=find_packages(),
     install_requires=[
         'matplotlib',
         'numpy',
