@@ -18,7 +18,6 @@ setuptools.setup(
     license='MIT',
     packages=['alpaca_kernel'],
     install_requires=[
-        'setuptools',
         'matplotlib',
         'numpy',
         'pyserial',
