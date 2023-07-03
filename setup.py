@@ -16,12 +16,11 @@ setup(
         "Bug Tracker": "https://github.com/twhoekstra/alpaca_kernel_2"
     },
     license='MIT',
-    packages=find_packages(),
+    packages=find_packages(include=['alpaca_kernel_launcher.py']),
     package_data={'': ['resources/*', 'resources/*.png']},
     install_requires=[
         'matplotlib',
         'numpy',
         'pyserial',
     ],
-    scripts=['alpaca_kernel_launcher.py']
 )
