@@ -13,8 +13,8 @@ requirements:
 
   run:
     - python
-    - matplotlib # [not win]
     - numpy x.x # [not win]
+    - matplotlib # [not win]
     - pyserial
     - debugpy
     - ipython
