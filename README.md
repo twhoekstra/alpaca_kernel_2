@@ -13,10 +13,12 @@ This package provides the ALPACA kernel for Jupyter.
 ## Installing environment
 
 1. Get [`requirements_windows.txt`](https://raw.githubusercontent.com/twhoekstra/alpaca_kernel_2/main/requirements_windows.txt)
-2. `conda create -n my_env --file "requirements_windows.txt" --channel twh`
-3. `conda activate my_env`
-4. `python -m alpaca install`
-4. `python -m ipykernel install`
+2. `conda config --add channels conda-forge`
+3. `conda config --set channel_priority strict`
+4. `conda create -n my_env --file "requirements_windows.txt" --channel twh`
+5. `conda activate my_env`
+6. `python -m alpaca install`
+7. `python -m ipykernel install`
 
 ## Installation from source (For development)
 
