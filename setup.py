@@ -23,4 +23,5 @@ setup(
         'numpy',
         'pyserial',
     ],
+    scripts=['alpaca_kernel_launcher.py']
 )
