@@ -1,0 +1,36 @@
+package:
+  name: "alpaca_kernel_2"
+  version: "0.0.1"
+
+source:
+  git_rev: 0.0.1
+  git_url: https://github.com/twhoekstra/alpaca_kernel_2
+
+requirements:
+  build:
+    - python
+    - numpy x.x # [not win]
+
+  run:
+    - python
+    - matplotlib # [not win]
+    - numpy x.x # [not win]
+    - pyserial
+    - debugpy
+    - ipython
+    - comm
+    - traitlets
+    - jupyter_client
+    - jupyter_core
+    - nest_asyncio
+    - tornado
+    - appnope
+    - pyzmq
+    - psutil
+    - packaging
+    
+about:
+  home: https://github.com/twhoekstra/alpaca_kernel_2
+  license: MIT
+  license_family: MIT
+  summary: jupyter_micropython_kernel and IPyKernel
