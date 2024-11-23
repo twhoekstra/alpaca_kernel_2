@@ -21,6 +21,7 @@ from contextlib import contextmanager
 from functools import partial
 
 import numpy as np
+import matplotlib as mpl
 from matplotlib import pyplot as plt
 from tornado import websocket
 
@@ -83,6 +84,8 @@ def _get_comm_manager(*args, **kwargs):
 
 comm.create_comm = _create_comm
 comm.get_comm_manager = _get_comm_manager
+
+mpl.use('inline') # Force the matplotlib backend to be 'inline' by default
 
 ap_plot = argparse.ArgumentParser(prog="%plot", add_help=False)
 ap_plot.add_argument('--mode', type=str, default='matplotlib')
