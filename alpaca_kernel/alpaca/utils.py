@@ -11,8 +11,7 @@ def _to_png(fig):
     imgdata = BytesIO()
     fig.savefig(imgdata, format='png')
     imgdata.seek(0)
-    return urllib.parse.quote(
-        base64.b64encode(imgdata.getvalue()))
+    return imgdata.read()
 
 
 def string_to_numpy(string):
