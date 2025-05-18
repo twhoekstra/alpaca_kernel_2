@@ -6,7 +6,7 @@ import numpy as np
 
 
 def _to_png(fig):
-    """Return a base64-encoded PNG from a
+    """Return a not base64-encoded PNG from a
     matplotlib figure."""
     imgdata = BytesIO()
     fig.savefig(imgdata, format='png')
