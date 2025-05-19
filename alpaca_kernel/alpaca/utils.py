@@ -9,7 +9,7 @@ def _to_png(fig):
     """Return a not base64-encoded PNG from a
     matplotlib figure."""
     imgdata = BytesIO()
-    fig.savefig(imgdata, format='png')
+    fig.savefig(imgdata, format='png',bbox_inches='tight')
     imgdata.seek(0)
     return imgdata.read()
 
