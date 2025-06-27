@@ -6,13 +6,12 @@ import numpy as np
 
 
 def _to_png(fig):
-    """Return a base64-encoded PNG from a
+    """Return a not base64-encoded PNG from a
     matplotlib figure."""
     imgdata = BytesIO()
-    fig.savefig(imgdata, format='png')
+    fig.savefig(imgdata, format='png',bbox_inches='tight')
     imgdata.seek(0)
-    return urllib.parse.quote(
-        base64.b64encode(imgdata.getvalue()))
+    return imgdata.read()
 
 
 def string_to_numpy(string):
